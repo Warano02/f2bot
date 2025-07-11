@@ -6,7 +6,7 @@
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "off",
+    "awc": "on",
     "mode": "private",
     "antidelete": "private",
     "antiedite": "private",
