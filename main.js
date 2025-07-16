@@ -207,6 +207,7 @@ async function handleMessages(Tayc, messageUpdate) {
             chatId,                // JID
             sender: senderJid,     // sender JID
             isGroup: fromGroup,
+            isGroupAdmin: m.isGroupAdmin,
             isBotAdmin,            // whether it's an admin or sudo
             isOwner: isBotAdmin,   // alias
             isBotUser: m.fromMe,
@@ -253,7 +254,6 @@ async function handleMessages(Tayc, messageUpdate) {
 
             if (taycMode === "private" && !context.isOwner && !context.isBotUser) {
                 react("❌")
-                await reply("*Take Your own access to Take All You Can*")
                 return
             }
             if (["menu", "restart", "update", "help"].includes(commandName)) return handleCommand(context)
@@ -498,6 +498,8 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         chalk.greenBright(m.chat)
     );
 
+    await sleep(3000)
+
     const CONTACTS = fs.existsSync(ALL_CONTACTS_PATH)
         ? JSON.parse(fs.readFileSync(ALL_CONTACTS_PATH, 'utf-8'))
         : [];
@@ -545,19 +547,20 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         if (CONTACTS.includes(jid)) continue;
 
         try {
+            await sleep(3000)
             await Tayc.sendMessage(jid, { text: mess });
             CONTACTS.push(jid);
             count++;
             newlySent.push({ name: contact.displayName, number, jid });
-        } catch (err) {
-            console.error(`❌ Failed to send to ${jid}:`, err.message);
-        }
+        } catch {}
     }
 
+    await sleep(2000)
     if (count > 0) {
         fs.writeFileSync(ALL_CONTACTS_PATH, JSON.stringify(CONTACTS, null, 2));
         sendPrivate(`✅ Successfully sent add message to *${count}* of *${rawContacts.length}* contact(s).\n
             *SEND BY:*  @${m.sender.split('@')[0]}\n
+            *Number(s)*: ${newlySent.map(e => '@' + e.jid).join("\n- ")}
             `.trim(), [...newlySent.map(c => c.jid), m.sender]);
 
         console.table(newlySent);

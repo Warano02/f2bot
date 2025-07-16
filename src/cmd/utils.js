@@ -1,3 +1,5 @@
+const viewOnceUtils = require("../utils/common/viewonce")
+
 module.exports = [
     {
         command: ["repeat", "rpt"],
@@ -12,6 +14,22 @@ module.exports = [
             } catch {
                 reply(mess.error)
             }
+        }
+    },
+    {
+        command: ["vv", "rvv", "relomovewiewonce"],
+        desc: "Remove view once message",
+        operate: async ({ Tayc, m:message, quoted, react, chatId }) => {
+            if (!quoted) return react("❌")
+            return viewOnceUtils({ Tayc,message, chatId })
+        }
+    },
+    {
+        command: ["vv2", "rvv2"],
+        desc: "Remove view once message and send it privately",
+        operate: async ({ Tayc, m:message, quoted, react,botNumber }) => {
+            if (!quoted) return react("❌")
+            return viewOnceUtils({ Tayc,message, chatId:botNumber })
         }
     }
 
