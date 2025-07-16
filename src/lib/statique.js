@@ -28,11 +28,11 @@ function logMessage(sock, msg) {
     const fullLineLength = 50;
     const decoratedName = `『 ${botName} 』`;
     const remaining = fullLineLength - decoratedName.length;
-    const side = "\t\t†" + '━'.repeat(Math.floor(remaining / 2));
-    const header = chalk.hex('#FFAA00')(side + decoratedName + side.replace("†", "").replace("\t\t", "").concat("╮"));
+    const side = "†" + '━'.repeat(Math.floor(remaining / 2));
+    const header = chalk.hex('#FFAA00')(side + decoratedName + side.replace("†", "").replace("", "").concat("╮"));
 
-    const label = (txt) => chalk.green.bold(`\t\t» ${txt.padEnd(14)}: `);
-    const footer = chalk.hex('#FF00FF')('\t\t╰' + '━'.repeat(fullLineLength) + '╯');
+    const label = (txt) => chalk.green.bold(`» ${txt.padEnd(14)}: `);
+    const footer = chalk.hex('#FF00FF')('╰' + '━'.repeat(fullLineLength) + '╯');
 
     const fields = [
         `${label('Sent Time')}${chalk.white(timestamp.toLocaleString('en-GB', {

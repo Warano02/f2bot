@@ -16,10 +16,12 @@
     "statusemojis": "🤞"
   },
   "mess": {
-    "addNewContact": ""
+    "addNewContact": "salut, on s'enregistre"
   },
   "statusblacklist": [],
-  "sudo": ["237621092130@s.whatsapp.net"],
+  "sudo": [
+    "237621092130@s.whatsapp.net"
+  ],
   "lastforwarding": "2025-07-10T09:16:44.251Z",
   "scheduled": []
 }

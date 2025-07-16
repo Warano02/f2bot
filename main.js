@@ -824,6 +824,8 @@ function loadCommandsGroupedByCategory() {
 
 // handle cmd command
 async function handleCommand({ Tayc, react, reply, text: Text, command }) {
+    console.log("called");
+    
     const CMDS = getCommands()
     const settings = GETSETTINGS()
     let prefix = settings.prefix
@@ -891,7 +893,7 @@ async function handleCommand({ Tayc, react, reply, text: Text, command }) {
             for (const [category, commands] of Object.entries(allCommands)) {
                 text += `╭───❍ *${category.toUpperCase()} COMMANDS*\n`
                 for (const cmd of commands) {
-                    text += `│ • ${cmd.command[0]} \n`
+                    text += `│ • ${cmd.command[0].toUpperCase()} \n`
                 }
                 text += `╰──────────────\n\n`
             }
