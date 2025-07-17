@@ -1,9 +1,24 @@
-module.exports=[
+module.exports = [
     {
-        command:["antibadword"],
-        desc:"Set antibadword in the group",
-        operate:async ({}) => {
-            
+        command: ["antibadword"],
+        desc: "Set antibadword in the group",
+        operate: async ({ }) => {
+
         }
-    }
+    },
+    {
+        command: ['getgrouppp','ggpp', 'getgrouprofilepic'],
+        desc:"Get a profile picture ",
+        operate: async ({ m, Tayc, reply,  }) => {
+            if (!m.isGroup) return reply("*This command is only for group*");
+            try {
+                const ppUrl = await Tayc.profilePictureUrl(m.chat, 'image');
+                await Tayc.sendMessage(m.chat, { image: { url: ppUrl }, caption: ` *This Group's Profile Picture*` }, { quoted: m });
+            } catch(r) {
+                console.log(r);
+                
+                await Tayc.sendMessage(m.chat, { image: { url: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60' }, caption: '⚠️ No profile picture found for this group.' }, { quoted: m });
+            }
+        }
+    },
 ]

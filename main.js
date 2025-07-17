@@ -252,7 +252,7 @@ async function handleMessages(Tayc, messageUpdate) {
 
             if (!matched) return
 
-            if (taycMode === "private" && !context.isOwner && !context.isBotUser) {
+            if (taycMode === "private" && !context.isOwner) {
                 react("❌")
                 return
             }
