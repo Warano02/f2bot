@@ -1,9 +1,10 @@
+require("dotenv").config()
 const chalk = require('chalk')
 const readline = require('readline')
 const PhoneNumber = require('awesome-phonenumber')
 const NodeCache = require("node-cache")
 const pino = require("pino")
-
+global.api = process.env.API || "https://tayc-api.onrender.com"
 const {
     default: makeWASocket,
     useMultiFileAuthState,

@@ -3,7 +3,7 @@
     "prefix": ".",
     "chatbot": "off",
     "menustyle": "1",
-    "autorecordtype": "off",
+    "autorecordtype": "all",
     "autoread": "off",
     "lang": "en",
     "awc": "on",
@@ -13,7 +13,7 @@
     "autoviewstatus": true,
     "autoreactstatus": true,
     "autoreplystatus": false,
-    "statusemojis": "🤞"
+    "statusemojis": "👑"
   },
   "mess": {
     "addNewContact": "salut, on s'enregistre"

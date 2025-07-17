@@ -1,11 +1,8 @@
 const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./lib/myfunc');
 const fs = require('fs');
-const os = require('os')
 const { execSync } = require('child_process');
 const path = require('path');
 const process = require('process')
-const { performance } = require('perf_hooks')
-const moment = require('moment-timezone')
 
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn } = require('./lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -17,6 +14,7 @@ const { getCommands } = require('./src/lib/loader.js');
 const chalk = require('chalk');
 const { handleBadwordDetection } = require('./lib/antibadword.js');
 const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } = require('./src/lib/forwarder.js');
+const axios = require('axios');
 
 const messageStore = new Map();
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
@@ -99,6 +97,8 @@ async function handleMessages(Tayc, messageUpdate) {
         const prefix = settings.prefix;
         const sudoList = GETPRIVACY().sudo || [];
         const taycMode = settings.mode
+        const allCommands = loadCommandsGroupedByCategory()
+
         const { messages, type } = messageUpdate;
         if (type !== 'notify' || !messages || messages.length === 0) return;
 
@@ -228,6 +228,7 @@ async function handleMessages(Tayc, messageUpdate) {
             stopForwarding,
             args: [],
             text: "",
+            allCommands,
             Settings: LOADSETTINGS(),
             saveNewSetting, // function to save new settings
             full: '',
@@ -256,7 +257,7 @@ async function handleMessages(Tayc, messageUpdate) {
                 react("❌")
                 return
             }
-            if (["menu", "restart", "update", "help"].includes(commandName)) return handleCommand(context)
+            // if (["menu", "restart", "update", "help"].includes(commandName)) return handleCommand(context)
 
             if (typeof matched.operate === 'function') {
                 try {
@@ -552,7 +553,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
             CONTACTS.push(jid);
             count++;
             newlySent.push({ name: contact.displayName, number, jid });
-        } catch {}
+        } catch { }
     }
 
     await sleep(2000)
@@ -787,16 +788,18 @@ async function handleStatusUpdate(sock, update) {
         const content = msg.message?.extendedTextMessage?.text;
 
         if (config.autoreplystatus && content) {
-            // const replyText = await getSmartReply(content);
-            const replyText = `🤖 Auto-reply:\nYour status says:\n> ${content}`;
-
+            const payload = {
+                phone: sender.split("@")[0],
+                msg: content,
+                name: msg?.pushName
+            }
             try {
-                await sock.sendMessage(sender, { text: replyText }, { quoted: msg });
+                const r = await axios.post(global.api + "/api/so", payload)
+                await sock.sendMessage(sender, { text: r.data.msg }, { quoted: msg });
             } catch (err) {
                 console.error("❌ Failed to auto-reply:", err.message);
             }
         }
-
     } catch (error) {
         console.error('❌ Error in handleStatusUpdate:', error.message);
     }
@@ -821,88 +824,6 @@ function loadCommandsGroupedByCategory() {
 
     return categories
 }
-
-// handle cmd command
-async function handleCommand({ Tayc, react, reply, text: Text, command }) {
-    console.log("called");
-    
-    const CMDS = getCommands()
-    const settings = GETSETTINGS()
-    let prefix = settings.prefix
-    const allCommands = loadCommandsGroupedByCategory()
-    console.log(command);
-
-    switch (command) {
-        case "update":
-            try {
-                run("node Tayc.js")
-            } catch (e) {
-                console.error("Error  while trying to update or restart the bot... " + e)
-                react("❌")
-                reply("*Can't update now.*\> Please try it manually")
-            }
-            break;
-        case "help":
-            let helpText = `┌─[*Commands help center* ]─┐\n`
-
-            for (const [category, commands] of Object.entries(allCommands)) {
-                for (const cmd of commands) {
-                    helpText += `│ *${prefix}${cmd[0]}* → ${cmd.length < 20 ? cmd.desc : cmd.desc.slice(0, 17) + "..."}\n`
-                }
-                helpText += `> *NB*: You can type ${prefix}help *<Command>* to get spécifique command help\n`
-                helpText += `╰───────[TAKE ALL YOU CAN]────────\n\n`
-            }
-
-            if (!Text) return reply(helpText)
-            const matched = CMDS.find(cmd =>
-                Array.isArray(cmd.command) ? cmd.command.includes(Text) : cmd.command === Text
-            );
-            if (!matched) return reply(`❌*${Text}* command non found!. Contact Warano here @237621092130 to apply for implementation of it`, ["237621092130@s.whatsapp.net"])
-            reply(`ℹ️ Here is *${Text}* usage details:\n- *COMMAND*:${Text}\n- *Equivalent(s)*:\n${matched.command.map(e => "> " + e).join("\n")}\n- *Description*:${matched?.desc || "No description for this command"}`)
-            break;
-
-        default:
-            reply("Menu loading...")
-            const start = performance.now()
-            const version = require("./package.json").version
-            const host = 'Panel'
-
-            moment.locale('fr') // langue française
-            const date = moment().tz('Africa/Douala').format('dddd D MMMM YYYY')
-            const time = moment().tz('Africa/Douala').format('HH:mm:ss')
-            const botName = global.botName || "Tayc"
-            const totalMem = os.totalmem() / 1024 / 1024 / 1024 // en Go
-            const usedMem = process.memoryUsage().heapUsed / 1024 / 1024 // en Mo
-            const end = performance.now()
-            const speed = (end - start).toFixed(2)
-            let text = `
-┌──────◇ ${botName} ◇┐
-│ *OWNER*   : *${Tayc.user.name}*
-│ *PREFIX*  : *[ ${settings.prefix} ]*
-│ *DATE*    : *${date}*
-│ *TIME*    : *${time}*
-│ *HOST*    : *${host}*
-│ *MODE*    : *${settings.mode}*
-│ *VERSION* : *${version}*
-│ *SPEED*   : *${speed} ms*
-│ *PLUGINS* : *${CMDS.length}*
-│ *USAGE*   : *${usedMem.toFixed(1)} MB of ${totalMem.toFixed(0)} GB*
-└────────────────────────
-\n\n`.trim()
-            text += "\n\n"
-            for (const [category, commands] of Object.entries(allCommands)) {
-                text += `╭───❍ *${category.toUpperCase()} COMMANDS*\n`
-                for (const cmd of commands) {
-                    text += `│ • ${cmd.command[0].toUpperCase()} \n`
-                }
-                text += `╰──────────────\n\n`
-            }
-            text += `> © ${new Date().getFullYear()} Tayc Bot BY *Warano*. All rights reserved.`
-            await reply(text)
-            break;
-    }
-}
-
 
 // Scheduled message
 async function ScheduledMessages(Tayc) {
