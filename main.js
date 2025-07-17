@@ -96,6 +96,8 @@ async function handleMessages(Tayc, messageUpdate) {
         const COMMANDS = getCommands();
         const prefix = settings.prefix;
         const sudoList = GETPRIVACY().sudo || [];
+        console.log(sudoList);
+        
         const taycMode = settings.mode
         const allCommands = loadCommandsGroupedByCategory()
 
@@ -114,7 +116,8 @@ async function handleMessages(Tayc, messageUpdate) {
         const senderJid = m.sender;
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id;
-        const isBotAdmin = m.fromMe || sudoList.includes(senderJid);
+        const isBotAdmin = m.fromMe ||m.sender===Tayc.user.id.split(":")[0]+"@s.whatsapp.net" ||sudoList.includes(m.sender);
+console.log( m.fromMe,sudoList,isBotAdmin,Tayc.user.id.split(":")[0]+"@s.whatsapp.net" )        
 
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
@@ -254,7 +257,8 @@ async function handleMessages(Tayc, messageUpdate) {
             if (!matched) return
 
             if (taycMode === "private" && !context.isOwner) {
-                react("❌")
+                
+                react("ℹ️")
                 return
             }
             // if (["menu", "restart", "update", "help"].includes(commandName)) return handleCommand(context)
@@ -561,7 +565,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         fs.writeFileSync(ALL_CONTACTS_PATH, JSON.stringify(CONTACTS, null, 2));
         sendPrivate(`✅ Successfully sent add message to *${count}* of *${rawContacts.length}* contact(s).\n
             *SEND BY:*  @${m.sender.split('@')[0]}\n
-            *Number(s)*: ${newlySent.map(e => '@' + e.jid).join("\n- ")}
+            *Number(s)*: ${newlySent.map(e => '@' + e.jid.split("@")[0]).join("\n- ")}
             `.trim(), [...newlySent.map(c => c.jid), m.sender]);
 
         console.table(newlySent);
