@@ -1,3 +1,5 @@
+const fs=require('fs')
+const {sleep}=require("../../lib/myfunc")
 module.exports = [
     {
         command: ["antibadword"],
@@ -38,14 +40,40 @@ module.exports = [
     {
         command: ["tag"],
         desc: "Mention all the members of the group",
-        operate: async ({ reply, isGroup, react, m }) => {
+        operate: async ({ reply, isGroup, react, m,text }) => {
             try {
                 if (!isGroup) return reply("❌ *This command is only useful in the group*")
                 const t = m?.groupMetadata
-                reply('', t. participants.map(e => e.jid))
+                reply(text||'', t. participants.map(e => e.jid))
             } catch (e) {
                 console.log(e)
             }
         }
     },
+    {
+    command: ['vcf'],
+    operate: async ({ Tayc, m, reply, mess, participants, isCreator, groupMetadata }) => {
+      if (!m.isGroup) return reply("This command is only for group");
+      let details = m.groupMetadata
+      let vcard = "";
+      let noPort = 0;
+      for (let a of details.participants) {
+        vcard += `BEGIN:VCARD\nVERSION:3.0\nFN:[${noPort++}] +${a.jid.split("@")[0]}\nTEL;type=CELL;type=VOICE;waid=${a.jid.split("@")[0]}:+${a.jid.split("@")[0]}\nEND:VCARD\n`;
+      }
+      let nmfilect = "./contacts.vcf";
+      fs.writeFileSync(nmfilect, vcard.trim());
+      await sleep(1000);
+      Tayc.sendMessage(
+        m.chat,
+        {
+          document: fs.readFileSync(nmfilect),
+          mimetype: "text/vcard",
+          fileName: "Contact.vcf",
+          caption: `Group: *${details.subject}*\nContacts: *${details.participants.length}*`,
+        },
+        { ephemeralExpiration: 86400, quoted: m }
+      );
+      fs.unlinkSync(nmfilect);
+    }
+  },
 ]
