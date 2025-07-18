@@ -124,15 +124,47 @@ module.exports = [
         }
     },
     {
+        command: ['mediatag'],
+        operate: async (context) => {
+            const { m, participants, Tayc, reply, cmd } = context;
+            if (!m.isGroup) return reply("*This command is only useful in the group*");
+            if (!m.quoted) return reply(`Reply to any media with caption ${cmd}`);
+            Tayc.sendMessage(m.chat, { forward: m?.quoted?.fakeObj, mentions: participants.map((a) => a.id), });
+        }
+    },
+    {
         command: ['open'],
         operate: async (context) => {
-        const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
+            const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
             if (!isGroupAdmin) return reply("*I need to be an admin first*");
             if (!isBotAdmin) return react("🙄")
 
             Tayc.groupSettingUpdate(m.chat, "not_announcement");
             reply("Group opened by admin. Members can now send messages.");
+        }
+    },
+    {
+        command: ['poll',],
+        operate: async (context) => {
+            const { m, mess, text, isCreator, prefix, Tayc, isGroup, reply, cmd } = context;
+            if (!m.isGroup) return reply("❌");
+            let [poll, opt] = text.split("|");
+            if (text.split("|").length < 2)
+                return await reply(
+                    `Enter a question and at least 2 options\nExample: ${cmd} Who is best player?|Messi,Ronaldo,None...`
+                );
+            let options = [];
+            for (let i of opt.split(",")) {
+                options.push(i);
+            }
+
+            await Tayc.sendMessage(m.chat, {
+                poll: {
+                    name: poll,
+                    values: options,
+                },
+            });
         }
     },
     {
