@@ -96,8 +96,6 @@ async function handleMessages(Tayc, messageUpdate) {
         const COMMANDS = getCommands();
         const prefix = settings.prefix;
         const sudoList = GETPRIVACY().sudo || [];
-        console.log(sudoList);
-        
         const taycMode = settings.mode
         const allCommands = loadCommandsGroupedByCategory()
 
@@ -117,8 +115,6 @@ async function handleMessages(Tayc, messageUpdate) {
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id;
         const isBotAdmin = m.fromMe ||m.sender===Tayc.user.id.split(":")[0]+"@s.whatsapp.net" ||sudoList.includes(m.sender);
-console.log( m.fromMe,sudoList,isBotAdmin,Tayc.user.id.split(":")[0]+"@s.whatsapp.net" )        
-
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
                 await sleep(2000)

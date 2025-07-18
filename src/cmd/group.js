@@ -1,11 +1,33 @@
-const fs=require('fs')
-const {sleep}=require("../../lib/myfunc")
+const fs = require('fs')
+const { sleep } = require("../../lib/myfunc");
+const { getAntiBadword, setAntiBadword, removeAntiBadword } = require('../../lib');
+
 module.exports = [
     {
         command: ["antibadword"],
         desc: "Set antibadword in the group",
-        operate: async ({ }) => {
-
+        operate: async ({ Tayc, m, reply, args, chatId, cmd, react,isGroupAdmin,isOwner }) => {
+            if (!m.isGroup) return reply("*This command is only  for the group*")
+            if (!isOwner) return reply("*❌ TAKE YOUR OWN to TAKE ALL YOU CAN*")
+            if (!isGroupAdmin) return reply("*ℹ️ I need to be an admin of the group first*")
+            
+            const existingConfig = await getAntiBadword(chatId, 'on');
+            if (existingConfig?.enable && args[0] === "on") return reply("*🚨ANTIBADWORD is already enable in this group*")
+            if (!existingConfig?.enable && args[0] === "off") return reply("*🚨AntiBadword is already disabled for this group*")
+            if (args[0] === 'on') {
+                await setAntiBadword(chatId, 'on', 'delete');
+                return Tayc.sendMessage(chatId, { text: `*AntiBadword has been enabled successfully to default action("delete"). Use ${cmd} set <action> to customize action*.\> Now the default action is *delete*` });
+            } else if (args[0] === "off") {
+                await removeAntiBadword(chatId);
+                return Tayc.sendMessage(chatId, { text: '*AntiBadword has been disabled for this group*' });
+            }
+            const action = args[1]
+            if (args[0] === "set" && ['delete', 'kick', 'warn'].includes(action)) {
+                await setAntiBadword(chatId, 'on', action);
+                return Tayc.sendMessage(chatId, { text: `*AntiBadword action set to: ${action}*` });
+            } else {
+                react("❌")
+            }
         }
     },
     {
@@ -30,8 +52,8 @@ module.exports = [
                 const t = m?.groupMetadata
                 if (!t) return react("❌")
                 let text = `*TAGGED BY:* ${m.pushName}\n\n`
-                 text += t. participants.map((e, i) => i+1+ " @" + e.jid.split('@')[0]).join("\n")
-                reply(text, t. participants.map(e => e.jid))
+                text += t.participants.map((e, i) => i + 1 + " @" + e.jid.split('@')[0]).join("\n")
+                reply(text, t.participants.map(e => e.jid))
             } catch (e) {
                 console.log(e)
             }
@@ -40,40 +62,40 @@ module.exports = [
     {
         command: ["tag"],
         desc: "Mention all the members of the group",
-        operate: async ({ reply, isGroup, react, m,text }) => {
+        operate: async ({ reply, isGroup, react, m, text }) => {
             try {
                 if (!isGroup) return reply("❌ *This command is only useful in the group*")
                 const t = m?.groupMetadata
-                reply(text||'', t. participants.map(e => e.jid))
+                reply(text || '', t.participants.map(e => e.jid))
             } catch (e) {
                 console.log(e)
             }
         }
     },
     {
-    command: ['vcf'],
-    operate: async ({ Tayc, m, reply, mess, participants, isCreator, groupMetadata }) => {
-      if (!m.isGroup) return reply("This command is only for group");
-      let details = m.groupMetadata
-      let vcard = "";
-      let noPort = 0;
-      for (let a of details.participants) {
-        vcard += `BEGIN:VCARD\nVERSION:3.0\nFN:[${noPort++}] +${a.jid.split("@")[0]}\nTEL;type=CELL;type=VOICE;waid=${a.jid.split("@")[0]}:+${a.jid.split("@")[0]}\nEND:VCARD\n`;
-      }
-      let nmfilect = "./contacts.vcf";
-      fs.writeFileSync(nmfilect, vcard.trim());
-      await sleep(1000);
-      Tayc.sendMessage(
-        m.chat,
-        {
-          document: fs.readFileSync(nmfilect),
-          mimetype: "text/vcard",
-          fileName: "Contact.vcf",
-          caption: `Group: *${details.subject}*\nContacts: *${details.participants.length}*`,
-        },
-        { ephemeralExpiration: 86400, quoted: m }
-      );
-      fs.unlinkSync(nmfilect);
-    }
-  },
+        command: ['vcf'],
+        operate: async ({ Tayc, m, reply }) => {
+            if (!m.isGroup) return reply("This command is only for group");
+            let details = m.groupMetadata
+            let vcard = "";
+            let noPort = 0;
+            for (let a of details.participants) {
+                vcard += `BEGIN:VCARD\nVERSION:3.0\nFN:[${noPort++}] +${a.jid.split("@")[0]}\nTEL;type=CELL;type=VOICE;waid=${a.jid.split("@")[0]}:+${a.jid.split("@")[0]}\nEND:VCARD\n`;
+            }
+            let nmfilect = "./contacts.vcf";
+            fs.writeFileSync(nmfilect, vcard.trim());
+            await sleep(1000);
+            Tayc.sendMessage(
+                m.chat,
+                {
+                    document: fs.readFileSync(nmfilect),
+                    mimetype: "text/vcard",
+                    fileName: "Contact.vcf",
+                    caption: `Group: *${details.subject}*\nContacts: *${details.participants.length}*`,
+                },
+                { ephemeralExpiration: 86400, quoted: m }
+            );
+            fs.unlinkSync(nmfilect);
+        }
+    },
 ]
