@@ -270,6 +270,11 @@ async function handleMessages(Tayc, messageUpdate) {
             }
         }
 
+        // === quoted message ===
+        if (m.quoted) {
+            await handleQuotedMessage(context)
+        }
+
     } catch (error) {
         console.error('❌ Error in handleMessages:', error);
         await Tayc.sendMessage(Tayc.user.id, {
@@ -569,6 +574,14 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
     }
 }
 
+// when user reply to message
+async function handleQuotedMessage({ Tayc, m }) {
+    if (!m.quoted) return
+    console.log(m.quoted);
+    
+    return true
+}
+
 // antidelete message
 async function handleMessageRevocation(sock, m, botNumber) {
     try {
@@ -802,7 +815,7 @@ async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, delete
 }
 
 // antilink
-async function Antilink({ Tayc, body,sender,reply, deleteM,isBotUser, chatId, amGroupAdmin, isGroupAdmin }) {
+async function Antilink({ Tayc, body, sender, reply, deleteM, isBotUser, chatId, amGroupAdmin, isGroupAdmin }) {
     if (isBotUser || isGroupAdmin || !amGroupAdmin || !body) return;
     const whiteListLinks = ['youtube.com', 't.me/', 'sapjasha.com', 'wa.me/', 'whatsapp.com/'];
     const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/i;
@@ -813,7 +826,7 @@ async function Antilink({ Tayc, body,sender,reply, deleteM,isBotUser, chatId, am
     const antilinkConfig = await getAntilink(chatId, 'on');
     if (!antilinkConfig) return;
 
-   await deleteM();
+    await deleteM();
 
     const mentionTag = `@${sender.split('@')[0]}`;
     const mentionList = [sender];
@@ -923,10 +936,7 @@ async function handleStatusUpdate(sock, update) {
         console.error('❌ Error in handleStatusUpdate:', error.message);
     }
 }
-// to execute command
-function run(cmd, cwd = process.cwd()) {
-    execSync(cmd, { stdio: 'inherit', cwd });
-}
+
 
 function loadCommandsGroupedByCategory() {
     const commandsDir = path.join(__dirname, './src/cmd')
