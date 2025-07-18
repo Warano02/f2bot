@@ -1,6 +1,6 @@
 const fs = require('fs')
 const { sleep } = require("../../lib/myfunc");
-const { getAntiBadword, setAntiBadword, removeAntiBadword } = require('../../lib');
+const { getAntiBadword, setAntiBadword, removeAntiBadword, getAntilink, setAntilink, removeAntilink } = require('../../lib');
 
 module.exports = [
     {
@@ -25,6 +25,33 @@ module.exports = [
             if (args[0] === "set" && ['delete', 'kick', 'warn'].includes(action)) {
                 await setAntiBadword(chatId, 'on', action);
                 return Tayc.sendMessage(chatId, { text: `*AntiBadword action set to: ${action}*` });
+            } else {
+                react("❌")
+            }
+        }
+    },
+    {
+        command: ["antilink"],
+        desc: "Set antilink in the group",
+        operate: async ({ Tayc, m, reply, args, chatId, cmd, react,amGroupAdmin,isOwner }) => {
+            if (!m.isGroup) return reply("*This command is only  for the group*")
+            if (!isOwner) return reply("*❌ TAKE YOUR OWN to TAKE ALL YOU CAN*")
+            if (!amGroupAdmin) return reply("*ℹ️ I need to be an admin of the group first*")
+            
+            const existingConfig = await getAntilink(chatId, 'on');
+            if (existingConfig?.enable && args[0] === "on") return reply("*🚨ANTILINK is already enable in this group*")
+            if (!existingConfig?.enable && args[0] === "off") return reply("*🚨ANTILINK is already disabled for this group*")
+            if (args[0] === 'on') {
+                await setAntilink(chatId, 'on', 'delete');
+                return Tayc.sendMessage(chatId, { text: `*ANTILINK has been enabled successfully to default action("delete"). Use ${cmd} set <action> to customize action*.\> Now the default action is *delete*` });
+            } else if (args[0] === "off") {
+                await removeAntilink(chatId);
+                return Tayc.sendMessage(chatId, { text: '*ANTILINK has been disabled for this group*' });
+            }
+            const action = args[1]
+            if (args[0] === "set" && ['delete', 'kick', 'warn'].includes(action)) {
+                await setAntiBadword(chatId, 'on', action);
+                return Tayc.sendMessage(chatId, { text: `*ANTILINK action set to: ${action}*` });
             } else {
                 react("❌")
             }

@@ -1,7 +1,12 @@
 {
   "users": [],
   "groups": [],
-  "antilink": {},
+  "antilink": {
+    "120363418837575420@g.us": {
+      "enabled": true,
+      "action": "delete"
+    }
+  },
   "antibadword": {
     "120363418837575420@g.us": {
       "enabled": true,
