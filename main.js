@@ -4,7 +4,7 @@ const { execSync } = require('child_process');
 const path = require('path');
 const process = require('process')
 
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword } = require('./lib/index');
+const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword, getAntilink } = require('./lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -51,9 +51,7 @@ async function handleDemotionEvent() {
     return true
 }
 
-async function Antilink() {
-    return true
-}
+
 
 function loadAllChats() {
     try {
@@ -235,7 +233,7 @@ async function handleMessages(Tayc, messageUpdate) {
         // === Antilink / Badwords ===
         if (fromGroup && m.body) {
             await handleBadwordDetection(context);
-            await Antilink(m, Tayc);
+            await Antilink(context);
         }
 
         // === Command handling ===
@@ -783,6 +781,58 @@ async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, delete
     switch (antiBadwordConfig.action) {
         case 'delete':
             await reply(`*${mentionTag} bad words are not allowed here*`, mentionList);
+            break;
+
+        case 'kick':
+            await kickUser();
+            break;
+
+        case 'warn':
+            const warningCount = await incrementWarningCount(chatId, sender);
+            if (warningCount >= 3) {
+                await kickUser();
+            } else {
+                await Tayc.sendMessage(chatId, {
+                    text: `*${mentionTag} warning ${warningCount}/3 for using bad words*`,
+                    mentions: mentionList
+                });
+            }
+            break;
+    }
+}
+
+// antilink
+async function Antilink({ Tayc, body,sender,reply, deleteM,isBotUser, chatId, amGroupAdmin, isGroupAdmin }) {
+    if (isBotUser || isGroupAdmin || !amGroupAdmin || !body) return;
+    const whiteListLinks = ['youtube.com', 't.me/', 'sapjasha.com', 'wa.me/', 'whatsapp.com/'];
+    const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/i;
+    const hasLink = linkRegex.test(body);
+
+    if (!hasLink || whiteListLinks.some(link => body.includes(link))) return;
+
+    const antilinkConfig = await getAntilink(chatId, 'on');
+    if (!antilinkConfig) return;
+
+   await deleteM();
+
+    const mentionTag = `@${sender.split('@')[0]}`;
+    const mentionList = [sender];
+
+    const kickUser = async () => {
+        try {
+            await Tayc.groupParticipantsUpdate(chatId, [sender], 'remove');
+            await Tayc.sendMessage(chatId, {
+                text: `*${mentionTag} has been kicked for using bad words*`,
+                mentions: mentionList
+            });
+        } catch (err) {
+            console.error('❌ Error kicking user:', err);
+        }
+    };
+
+    switch (antilinkConfig.action) {
+        case 'delete':
+            await reply(`*${mentionTag} links are not allowed here*`, mentionList);
             break;
 
         case 'kick':
