@@ -579,8 +579,6 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
 // when user reply to message
 async function handleQuotedMessage({ Tayc, m, botNumber }) {
     if (!m.quoted || !m.fromMe) return
-    console.log(m.quoted);
-
     if (m.quoted.viewOnce) {
         const i1 = `*viewOnce send by @${m.quoted.sender.split("@")[0]} `
         return viewOnceUtils({ Tayc, message: m, chatId: botNumber,e00e:i1,e01e:[m.quoted.sender] })
@@ -589,8 +587,6 @@ async function handleQuotedMessage({ Tayc, m, botNumber }) {
     if (m.quoted.chat==='status@broadcast') {
         return statusDownloader({Tayc,m,chatId:botNumber})
     }
-
-
     return true
 }
 
