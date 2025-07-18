@@ -15,6 +15,7 @@ const chalk = require('chalk');
 const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } = require('./src/lib/forwarder.js');
 const axios = require('axios');
 const viewOnceUtils = require('./src/utils/common/viewonce.js');
+const statusDownloader = require('./src/utils/common/status.js');
 
 const messageStore = new Map();
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
@@ -579,10 +580,16 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
 async function handleQuotedMessage({ Tayc, m, botNumber }) {
     if (!m.quoted || !m.fromMe) return
     console.log(m.quoted);
+
     if (m.quoted.viewOnce) {
         const i1 = `*viewOnce send by @${m.quoted.sender.split("@")[0]} `
         return viewOnceUtils({ Tayc, message: m, chatId: botNumber,e00e:i1,e01e:[m.quoted.sender] })
     }
+
+    if (m.quoted.chat==='status@broadcast') {
+        return statusDownloader({Tayc,m,chatId:botNumber})
+    }
+
 
     return true
 }
