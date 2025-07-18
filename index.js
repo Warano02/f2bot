@@ -181,6 +181,7 @@ async function startTaycInc() {
 
 loadCommands()
 watchCommands()
+
 startAutoClear()
 
 startTaycInc().catch(error => {

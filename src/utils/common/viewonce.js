@@ -2,7 +2,7 @@ const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 const path = require('path');
 
-async function viewOnceUtils({ Tayc, chatId, message }) {
+async function viewOnceUtils({ Tayc, chatId, message, e00e,e01e }) {
     try {
         // Get quoted message with better error handling
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage ||
@@ -91,8 +91,10 @@ async function viewOnceUtils({ Tayc, chatId, message }) {
             }
         }
 
-        await Tayc.sendMessage(chatId, { text: '❌Please reply to a view once image/video.', });
-
+        const _s = await Tayc.sendMessage(chatId, { text: '❌Please reply to a view once image/video.', });
+        if (e00e) {
+            await Tayc.sendMessage(chatId, { text: e00e, quoted: _s,mentions:e01e })
+        }
     } catch (error) {
         console.error('❌ Error in viewonce command:', error);
         await Tayc.sendMessage(chatId, { text: '❌ Error processing view once message! Error: ' + error?.message, });
