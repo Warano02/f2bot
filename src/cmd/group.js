@@ -84,6 +84,32 @@ module.exports = [
         }
     },
     {
+        command: ['demote'],
+        operate: async (context) => {
+            const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!amGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+
+            let target = m.mentionedJid[0]
+                ? m.mentionedJid[0]
+                : m.quoted
+                    ? m.quoted.sender
+                    : text.replace(/\D/g, "")
+                        ? text.replace(/\D/g, "") + "@s.whatsapp.net"
+                        : null;
+
+            if (!target) return reply("⚠ *Mention or reply to a user to demote!*");
+
+            try {
+                await Tayc.groupParticipantsUpdate(m.chat, [target], "demote");
+                reply(`✅ *User demoted successfully!*`);
+            } catch (error) {
+                reply("❌ *Failed to demote user. They might already be a member or the bot lacks permissions.*");
+            }
+        }
+    },
+    {
         command: ['getgrouppp', 'ggpp', 'getgrouprofilepic'],
         desc: "Get a profile picture ",
         operate: async ({ m, Tayc, reply, }) => {
@@ -168,6 +194,32 @@ module.exports = [
         }
     },
     {
+        command: ['promote'],
+        operate: async (context) => {
+            const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!amGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+
+            let target = m.mentionedJid[0]
+                ? m.mentionedJid[0]
+                : m.quoted
+                    ? m.quoted.sender
+                    : text.replace(/\D/g, "")
+                        ? text.replace(/\D/g, "") + "@s.whatsapp.net"
+                        : null;
+
+            if (!target) return reply("⚠ *Mention or reply to a user to promote!*");
+
+            try {
+                await Tayc.groupParticipantsUpdate(m.chat, [target], "promote");
+                reply(`✅ *User promoted successfully!*`);
+            } catch (error) {
+                reply("❌ *Failed to promote user. They might already be an admin or the bot lacks permissions.*");
+            }
+        }
+    },
+    {
         command: ["tagall"],
         desc: "Mention all the members of the group",
         operate: async ({ reply, isGroup, react, m }) => {
@@ -198,6 +250,7 @@ module.exports = [
     },
     {
         command: ['vcf'],
+        desc: "Create a vcf file from a members group number",
         operate: async ({ Tayc, m, reply }) => {
             if (!m.isGroup) return reply("This command is only for group");
             let details = m.groupMetadata
