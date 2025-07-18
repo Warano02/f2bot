@@ -4,6 +4,21 @@ const { getAntiBadword, setAntiBadword, removeAntiBadword, getAntilink, setAntil
 
 module.exports = [
     {
+        command: ['add'],
+        operate: async (context) => {
+            const { m, text, isOwner, reply, react, Tayc, isGroupAdmin } = context;
+            if (!m.isGroup) return reply("*This command is only  for the group*")
+            if (!isOwner) return reply("*❌ TAKE YOUR OWN to TAKE ALL YOU CAN*")
+            if (!isGroupAdmin) return reply("*ℹ️ I need to be an admin of the group first*")
+
+            let bws = m.quoted
+                ? m.quoted.sender
+                : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+            await Tayc.groupParticipantsUpdate(m.chat, [bws], "add");
+            react("✅");
+        }
+    },
+    {
         command: ["antibadword"],
         desc: "Set antibadword in the group",
         operate: async ({ Tayc, m, reply, args, chatId, cmd, react, isGroupAdmin, isOwner }) => {
@@ -58,6 +73,17 @@ module.exports = [
         }
     },
     {
+        command: ['close'],
+        operate: async (context) => {
+            const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!isGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+            Tayc.groupSettingUpdate(m.chat, "announcement");
+            reply("Group closed by admin. Only admins can send messages.");
+        }
+    },
+    {
         command: ['getgrouppp', 'ggpp', 'getgrouprofilepic'],
         desc: "Get a profile picture ",
         operate: async ({ m, Tayc, reply, }) => {
@@ -80,7 +106,7 @@ module.exports = [
             try {
                 let groupInvite = await Tayc.groupInviteCode(m.chat); console.log(m.groupMetadata.owner);
 
-                let groupOwner = m.groupMetadata.participants.filter(e=>e.admin==="superadmin")[0].jid;
+                let groupOwner = m.groupMetadata.participants.filter(e => e.admin === "superadmin")[0].jid;
                 let groupLink = `https://chat.whatsapp.com/${groupInvite}`;
                 let memberCount = m.groupMetadata.participants.length;
 
@@ -95,6 +121,18 @@ module.exports = [
             } catch (error) {
                 reply("❌ *Failed to fetch group link. Make sure the bot has admin permissions.*");
             }
+        }
+    },
+    {
+        command: ['open'],
+        operate: async (context) => {
+        const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!isGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+
+            Tayc.groupSettingUpdate(m.chat, "not_announcement");
+            reply("Group opened by admin. Members can now send messages.");
         }
     },
     {
