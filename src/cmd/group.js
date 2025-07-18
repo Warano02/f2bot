@@ -84,6 +84,18 @@ module.exports = [
         }
     },
     {
+        command: ['delppgroup'],
+        operate: async (context) => {
+            const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!amGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+
+            await Tayc.removeProfilePicture(m.chat);
+            reply("Group profile picture has been successfully removed.");
+        }
+    },
+    {
         command: ['demote'],
         operate: async (context) => {
             const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
@@ -119,6 +131,34 @@ module.exports = [
                 await Tayc.sendMessage(m.chat, { image: { url: ppUrl }, caption: ` *This Group's Profile Picture*` }, { quoted: m });
             } catch (r) {
                 await Tayc.sendMessage(m.chat, { image: { url: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png?q=60' }, caption: '⚠️ No profile picture found for this group.' }, { quoted: m });
+            }
+        }
+    },
+    {
+        command: ['kick', 'remove'],
+        operate: async (context) => {
+            const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply, text} = context;
+            if (!m.isGroup) return reply("*This command is only for group*");
+            if (!isGroupAdmin) return reply("*I need to be an admin first*");
+            if (!isBotAdmin) return react("🙄")
+
+            let target = m.mentionedJid[0]
+                ? m.mentionedJid[0]
+                : m.quoted
+                    ? m.quoted.sender
+                    : text.replace(/[^0-9]/g, "")
+                        ? text.replace(/[^0-9]/g, "") + "@s.whatsapp.net"
+                        : null;
+
+            if (!target) {
+                return reply("⚠ *Mention or reply to a user to remove!*");
+            }
+
+            try {
+                await Tayc.groupParticipantsUpdate(m.chat, [target], "remove");
+                reply(`✅ *User removed successfully!*`);
+            } catch (error) {
+                reply("❌ *Failed to remove user. They might be an admin or the bot lacks permissions.*");
             }
         }
     },
