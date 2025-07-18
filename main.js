@@ -4,7 +4,7 @@ const { execSync } = require('child_process');
 const path = require('path');
 const process = require('process')
 
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn } = require('./lib/index');
+const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword } = require('./lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -12,7 +12,6 @@ const { writeFile } = require('fs/promises');
 const logMessage = require('./src/lib/statique.js');
 const { getCommands } = require('./src/lib/loader.js');
 const chalk = require('chalk');
-const { handleBadwordDetection } = require('./lib/antibadword.js');
 const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } = require('./src/lib/forwarder.js');
 const axios = require('axios');
 
@@ -114,7 +113,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const senderJid = m.sender;
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id;
-        const isBotAdmin = m.fromMe ||m.sender===Tayc.user.id.split(":")[0]+"@s.whatsapp.net" ||sudoList.includes(m.sender);
+        const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender);
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
                 await sleep(2000)
@@ -156,7 +155,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const react = async (emoji) => await Tayc.sendMessage(chatId, {
             react: { text: emoji, key: m.key }
         });
-
+        const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
         logMessage(Tayc, m);
 
         // === Receive contact ===
@@ -179,11 +178,7 @@ async function handleMessages(Tayc, messageUpdate) {
             return;
         }
 
-        // === Antilink / Badwords ===
-        if (fromGroup && m.body) {
-            await handleBadwordDetection(Tayc, chatId, m, m.body.toLowerCase(), senderJid);
-            await Antilink(m, Tayc);
-        }
+
 
 
         // === Chatbot mode ===
@@ -207,6 +202,7 @@ async function handleMessages(Tayc, messageUpdate) {
             sender: senderJid,     // sender JID
             isGroup: fromGroup,
             isGroupAdmin: m.isGroupAdmin,
+            amGroupAdmin: m.amGroupAdmin,
             isBotAdmin,            // whether it's an admin or sudo
             isOwner: isBotAdmin,   // alias
             isBotUser: m.fromMe,
@@ -225,6 +221,7 @@ async function handleMessages(Tayc, messageUpdate) {
             estimateForwardTime,
             getForwardStatus,
             stopForwarding,
+            deleteM,
             args: [],
             text: "",
             allCommands,
@@ -234,6 +231,12 @@ async function handleMessages(Tayc, messageUpdate) {
             cmd: "",
             raw: message           // original Baileys message
         };
+
+        // === Antilink / Badwords ===
+        if (fromGroup && m.body) {
+            await handleBadwordDetection(context);
+            await Antilink(m, Tayc);
+        }
 
         // === Command handling ===
         if (m.body.startsWith(prefix)) {
@@ -253,12 +256,10 @@ async function handleMessages(Tayc, messageUpdate) {
             if (!matched) return
 
             if (taycMode === "private" && !context.isOwner) {
-                
-                react("ℹ️")
+
+                react("🚬")
                 return
             }
-            // if (["menu", "restart", "update", "help"].includes(commandName)) return handleCommand(context)
-
             if (typeof matched.operate === 'function') {
                 try {
 
@@ -731,6 +732,74 @@ async function handleMessageEdit(sock, m, botNumber) {
 
     } catch (err) {
         console.error("handleMessageEdit error:", err);
+    }
+}
+
+function loadAntibadwordConfig(groupId) {
+    try {
+        const configPath = path.join(__dirname, './src/db/userGroupData.json');
+        if (!fs.existsSync(configPath)) {
+            return {};
+        }
+        const data = JSON.parse(fs.readFileSync(configPath));
+        return data.antibadword?.[groupId] || {};
+    } catch (error) {
+        console.error('❌ Error loading antibadword config:', error.message);
+        return {};
+    }
+}
+
+// antibadword
+async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, deleteM, sender, reply, Settings, isBotUser, isGroupAdmin }) {
+    if (isBotUser || isGroupAdmin || !amGroupAdmin || !body) return;
+    const [config, antiBadwordConfig] = await Promise.all([
+        loadAntibadwordConfig(chatId),
+        getAntiBadword(chatId, 'on')
+    ]);
+    if (!config?.enabled || !antiBadwordConfig?.enabled) return;
+    const badWords = Settings.badWords || [];
+    const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(`\\b(${badWords.map(escapeRegExp).join('|')})\\b`, 'i');
+    const containsBadWord = pattern.test(body);
+    if (!containsBadWord) return;
+
+    await deleteM();
+
+    const mentionTag = `@${sender.split('@')[0]}`;
+    const mentionList = [sender];
+
+    const kickUser = async () => {
+        try {
+            await Tayc.groupParticipantsUpdate(chatId, [sender], 'remove');
+            await Tayc.sendMessage(chatId, {
+                text: `*${mentionTag} has been kicked for using bad words*`,
+                mentions: mentionList
+            });
+        } catch (err) {
+            console.error('❌ Error kicking user:', err);
+        }
+    };
+
+    switch (antiBadwordConfig.action) {
+        case 'delete':
+            await reply(`*${mentionTag} bad words are not allowed here*`, mentionList);
+            break;
+
+        case 'kick':
+            await kickUser();
+            break;
+
+        case 'warn':
+            const warningCount = await incrementWarningCount(chatId, sender);
+            if (warningCount >= 3) {
+                await kickUser();
+            } else {
+                await Tayc.sendMessage(chatId, {
+                    text: `*${mentionTag} warning ${warningCount}/3 for using bad words*`,
+                    mentions: mentionList
+                });
+            }
+            break;
     }
 }
 
