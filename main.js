@@ -591,6 +591,7 @@ async function handleQuotedMessage({ Tayc, m, botNumber }) {
 // antidelete message
 async function handleMessageRevocation(sock, m, botNumber) {
     try {
+        if (m.fromMe) return
         console.log(chalk.yellowBright("[ANTIDELETE]"), chalk.blueBright("Message revocation detected in"), chalk.greenBright(m.key.remoteJid));
         const config = GETSETTINGS();
         if (config.antidelete === "off") return;
@@ -706,6 +707,7 @@ async function handleMessageRevocation(sock, m, botNumber) {
 
 async function handleMessageEdit(sock, m, botNumber) {
     try {
+        if (m.fromMe) return
         console.log(chalk.yellowBright("[ANTIEDIT]"), chalk.blueBright("Edit Message detected in"), chalk.greenBright(m.key.remoteJid));
         const config = GETSETTINGS();
         if (config.antiedite === "off") return;
