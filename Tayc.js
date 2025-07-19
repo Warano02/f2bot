@@ -22,11 +22,12 @@ global.currentClient = null
 const useMobile = process.argv.includes("--mobile")
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-const question = (text) => {
-    if (rl) {
-        return new Promise((resolve) => rl.question(text, resolve))
-    }
-}
+const question = async (text) => {
+    return new Promise((resolve) => {
+       console.log(text); 
+        rl.question('', resolve);
+    });
+};
 
 const store = {
     messages: {},
