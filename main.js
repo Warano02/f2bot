@@ -1,8 +1,6 @@
 const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./lib/myfunc');
 const fs = require('fs');
-const { execSync } = require('child_process');
 const path = require('path');
-const process = require('process')
 
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword, getAntilink } = require('./lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
@@ -156,7 +154,7 @@ async function handleMessages(Tayc, messageUpdate) {
             react: { text: emoji, key: m.key }
         });
         const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
-        logMessage(Tayc, m);
+        logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
         // === Receive contact ===
         if (["contactMessage", "contactsArrayMessage"].includes(m.mtype)) {
@@ -581,11 +579,11 @@ async function handleQuotedMessage({ Tayc, m, botNumber }) {
     if (!m.quoted || !m.fromMe) return
     if (m.quoted.viewOnce) {
         const i1 = `*viewOnce send by @${m.quoted.sender.split("@")[0]} `
-        return viewOnceUtils({ Tayc, message: m, chatId: botNumber,e00e:i1,e01e:[m.quoted.sender] })
+        return viewOnceUtils({ Tayc, message: m, chatId: botNumber, e00e: i1, e01e: [m.quoted.sender] })
     }
 
-    if (m.quoted.chat==='status@broadcast') {
-        return statusDownloader({Tayc,m,chatId:botNumber})
+    if (m.quoted.chat === 'status@broadcast') {
+        return statusDownloader({ Tayc, m, chatId: botNumber })
     }
     return true
 }

@@ -21,7 +21,7 @@ const { startAutoClear } = require('./lib/myfunc2')
 global.currentClient = null
 const useMobile = process.argv.includes("--mobile")
 
-const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin, output: process.stdout }) : null
+const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (text) => {
     if (rl) {
         return new Promise((resolve) => rl.question(text, resolve))
@@ -150,7 +150,7 @@ async function startTaycInc() {
         if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
         let phoneNumber
-        phoneNumber = await question(chalk.bgBlack(chalk.underline.greenBright(`\nEnter your phone number : `)))
+        phoneNumber = await question(chalk.bgBlack(chalk.underline.greenBright(`\nEnter your phone number without (+) : `)))
         // Clean the phone number - remove any non-digit characters
         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
 
