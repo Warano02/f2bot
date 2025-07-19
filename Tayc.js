@@ -14,10 +14,9 @@ const {
     makeCacheableSignalKeyStore
 } = require("@whiskeysockets/baileys")
 
-const { handleMessages, handleGroupParticipantUpdate, getPrompt, handleStatusUpdate, ScheduledMessages } = require('./main')
+const { handleMessages, handleGroupParticipantUpdate, handleStatusUpdate, ScheduledMessages } = require('./main')
 const { loadCommands, watchCommands } = require('./src/lib/loader')
 
-const settings = require('./settings')
 const { startAutoClear } = require('./lib/myfunc2')
 global.currentClient = null
 const useMobile = process.argv.includes("--mobile")
@@ -26,8 +25,6 @@ const rl = process.stdin.isTTY ? readline.createInterface({ input: process.stdin
 const question = (text) => {
     if (rl) {
         return new Promise((resolve) => rl.question(text, resolve))
-    } else {
-        return Promise.resolve(settings.ownerNumber || phoneNumber)
     }
 }
 
