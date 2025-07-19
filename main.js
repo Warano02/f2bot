@@ -563,15 +563,8 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
     await sleep(2000)
     if (count > 0) {
         fs.writeFileSync(ALL_CONTACTS_PATH, JSON.stringify(CONTACTS, null, 2));
-        sendPrivate(`✅ Successfully sent add message to *${count}* of *${rawContacts.length}* contact(s).\n
-            *SEND BY:*  @${m.sender.split('@')[0]}\n
-            *Number(s)*: ${newlySent.map(e => '@' + e.jid.split("@")[0]).join("\n- ")}
-            `.trim(), [...newlySent.map(c => c.jid), m.sender]);
-
         console.table(newlySent);
-    } else {
-        sendPrivate("ℹ️ No new contact added or messages receive.");
-    }
+    } 
 }
 
 // when user reply to message
