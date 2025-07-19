@@ -1,38 +1,51 @@
+const axios = require("axios");
+const { sleep } = require("../../lib/myfunc");
 
-const axios = require('axios');
-const { sleep } = require('../../lib/myfunc');
 module.exports = [
     {
         command: ["tiktok", "tkt"],
-        desc: "Download a tiktok video",
+        desc: "Download a TikTok video",
         operate: async ({ reply, Tayc, m, react, text, cmd }) => {
-            if (!text) return reply(`*Provide the tiktok video link*. *Exemple*.\n> ${cmd} <Link>`)
-            if (global.tktd) return react("🚨")
-            let ma = 3
-            let i = 0
-            global.tktd = true
-            while (i <= ma && global.tktd) {
-                console.log("Try to download tiktok video: " + i);
+            if (!text) return reply(`*Provide a valid TikTok link.*\n\n*Example:*\n> ${cmd} https://vm.tiktok.com/xxx`);
 
+            if (global.tktd) return react("🚨");
+
+            global.tktd = true;
+            let attempts = 0;
+            const maxAttempts = 3;
+
+            react("⏳");
+            while (attempts < maxAttempts) {
                 try {
-                    const q = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/tiktok?url=${text}`)
-                    console.log(q.data);
-                    const res = q.data
-                    if (res?.data?.title && res?.data?.video) {
-                        await Tayc.sendMessage(m.chat, { caption: res.data?.title || "*No legend*", video: { url: res.data?.video }, fileName: "video.mp4", mimetype: "video/mp4", }, { quoted: m });
+                    const { data } = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
+
+                    if (data?.data?.video) {
+                        await Tayc.sendMessage(m.chat, {
+                            video: { url: data.data.video },
+                            caption: data.data.title || "🎵 TikTok Video",
+                            mimetype: "video/mp4",
+                            fileName: "video.mp4"
+                        }, { quoted: m });
+
+                        react("✅");
+                        break;
+                    } else {
+                        throw new Error("No video found in response");
                     }
-                } catch (e) {
-                    await sleep(5000)
-                    console.log(e);
-                } finally {
-                    i++
+
+                } catch (err) {
+                    console.log(`❌ Attempt ${attempts + 1} failed:`, err.message || err);
+                    await sleep(3000)
+                    attempts++;
                 }
             }
-            if (i > ma) {
-                react("❌")
-                reply("❌*Try again later*")
+
+            if (attempts === maxAttempts) {
+                react("❌");
+                reply("❌ *Failed to download the TikTok video. Please try again later.*");
             }
-            global.tktd = false
+
+            global.tktd = false;
         }
     }
 ]
