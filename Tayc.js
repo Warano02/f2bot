@@ -24,10 +24,33 @@ const useMobile = process.argv.includes("--mobile")
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = async (text) => {
     return new Promise((resolve) => {
-       console.log(text); 
+        console.log(text);
         rl.question('', resolve);
     });
 };
+
+function generateBotInfoCard({
+    name = "TAYC",
+    username = "Warano Dev",
+    platform = "Panel",
+    prefix = "[ . ]",
+    mode = "Private",
+    version = "1.0.0",
+    link = "https://sapjasha.com"
+} = {}) {
+    return `
+*╔───────* *『*  *${name}*  *』* *═───────╗*
+*»*  *Username:* *${username}*  
+*»*  *Platform:* *${platform}*  
+*»*  *Prefix:* *${prefix}*  
+*»*  *Mode:* *${mode}*  
+*»*  *Version:* *[ ${version} ]*  
+*»*  ${link}  
+*╚═══════════════════════╝*`.trim();
+}
+const package = require('./package.json')
+const { LOADSETTINGS } = require("./lib/myfunc")
+const stngs = LOADSETTINGS()
 
 const store = {
     messages: {},
@@ -89,7 +112,7 @@ async function startTaycInc() {
             global.currentClient = TaycInc;
             const botNumber = TaycInc.user.id.split(':')[0] + '@s.whatsapp.net';
             await TaycInc.sendMessage(botNumber, {
-                text: `🤖 Bot Connected Successfully!\n\n⏰ Time: ${new Date().toLocaleString()}\n✅ Status: Online and Ready!`
+                text: generateBotInfoCard({ username: TaycInc.user.name, version: package.version, prefix: stngs.settings.prefix, mode: stngs.settings.mode })
             });
             console.log(chalk.green("Connected ✅"));
         }

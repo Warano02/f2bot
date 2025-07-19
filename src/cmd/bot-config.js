@@ -1,4 +1,15 @@
 const fsp = require('fs/promises')
+const { spawn } = require('child_process');
+
+function restartBot() {
+    console.clear();
+    console.log("♻️  Redémarrage de index.js...\n");
+    spawn(process.argv[0], [__filename], {
+        stdio: 'inherit',
+        shell: true
+    });
+    process.exit();
+}
 
 module.exports = [
     {
@@ -11,6 +22,14 @@ module.exports = [
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Autorecord type  ${args[0] === "off" ? "disabled" : "set to " + args[0]} successfully !*`);
             } catch { }
+        }
+    },
+    {
+        command: ["update", "restart"],
+        desc: "Update bot",
+        operate: async ({ reply }) => {
+             reply("*Restarting....*")
+             restartBot()
         }
     },
     {
