@@ -1,5 +1,7 @@
-module.exports=[
-      {
+const { sleep } = require("../../lib/myfunc");
+
+module.exports = [
+    {
         command: ["forwardstatus", "fwstatus", "fwstat"],
         desc: "Check current forward status",
         operate: async ({ reply, getForwardStatus }) => {
@@ -24,9 +26,30 @@ module.exports=[
         }
     },
     {
+        command: ["inbox","ib","w"],
+        desc: "Send inbox message to all the members of an group",
+        operate: async ({ m, Tayc,reply, isGroup, react, getForwardStatus, estimateForwardTime,FORWARDMESSAGE, text }) => {
+            if (!isGroup) return reply("❌*This command can only be use in the group*")
+            const status = getForwardStatus();
+            if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
+            const t = m?.groupMetadata.participants.map(e => e.jid)
+            if (!text) return reply("*❌ Please provide the text to forward*")
+            await reply(`*🚨 To forward, i'll take ${estimateForwardTime(t.length).human}* to ib this ${t.length} members.`)
+            await sleep(3000)
+            const result = await FORWARDMESSAGE(Tayc, t, text);
+            if (result?.error) {
+                console.log(result);
+                react('❌')
+                reply(result?.msg || "done");
+            }
+        }
+    },
+    {
         command: ["forward", "fw",],
         desc: "Forward message to contacts inside a .vcf (reply to vcf)",
-        operate: async ({ Tayc, m, text, reply, FORWARDMESSAGE, cmd, react }) => {
+        operate: async ({ Tayc, m, text, reply, FORWARDMESSAGE, cmd, react, getForwardStatus }) => {
+            const status = getForwardStatus();
+            if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
             if (!m.quoted || !m.quoted.vcf) {
                 return reply(`❌ *Please reply to a '${cmd}' file so I can extract the contacts.*`);
             }
@@ -47,12 +70,10 @@ module.exports=[
                 return reply("❌ *No valid phone numbers to forward to.*");
             }
 
-            reply(`📨 Starting broadcast to ${jids.length} contacts...`);
-
             const result = await FORWARDMESSAGE(Tayc, jids, text);
             if (result?.error) {
                 console.log(result);
-                
+
                 react('❌')
                 reply(result?.msg || "done");
             }
