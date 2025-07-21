@@ -1,6 +1,4 @@
 const axios = require("axios");
-const fetch = require('node-fetch');
-
 module.exports = [
     {
         command: ["gpt"],
@@ -35,8 +33,8 @@ module.exports = [
             if (!text) return reply("*Please provide question*");
 
             try {
-                let response = await fetch(`https://bk9.fun/ai/jeeves-chat?q=${encodeURIComponent(text)}`);
-                let data = await response.json();
+                let response = await axios.get(`https://bk9.fun/ai/jeeves-chat?q=${encodeURIComponent(text)}`);
+                let data = response.data();
 
                 if (!data.BK9) {
                     reply(global.mess.error);
@@ -66,13 +64,13 @@ module.exports = [
     },
     {
         command: ['llama'],
-        desc:"Ask question to llama ia",
+        desc: "Ask question to llama ia",
         operate: async ({ m, reply, text }) => {
             if (!text) return reply("Please provide question");
 
             try {
-                let response = await fetch(`https://bk9.fun/ai/llama?q=${encodeURIComponent(text)}`);
-                let data = await response.json();
+                let response = await axios.get(`https://bk9.fun/ai/llama?q=${encodeURIComponent(text)}`);
+                let data = response.data;
 
                 if (!data.BK9) {
                     reply(global.mess.error);
@@ -106,8 +104,8 @@ module.exports = [
             try {
                 for (const api of apis) {
                     try {
-                        const response = await fetch(api);
-                        const data = await response.json();
+                        const response = await axios.get(api);
+                        const data = response.data;
 
                         if (data.message || data.data || data.answer || data.result) {
                             const answer = data.message || data.data || data.answer || data.result;

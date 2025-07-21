@@ -101,7 +101,7 @@ module.exports = [
     if (!text) return reply(`*Please provide a Facebook video url!*`);
     
     try {
-      var dlink = await fetchJson(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
+      var dlink = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
       var dlurl = dlink.data.high;
       
       await Tayc.sendMessage(m.chat, {
