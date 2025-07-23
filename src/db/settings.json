@@ -3,7 +3,7 @@
     "prefix": ".",
     "chatbot": "off",
     "menustyle": "1",
-    "autorecordtype": "all",
+    "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
     "awc": "on",
@@ -11,12 +11,12 @@
     "antidelete": "private",
     "antiedite": "private",
     "autoviewstatus": true,
-    "autoreactstatus": true,
+    "autoreactstatus": false,
     "autoreplystatus": false,
     "statusemojis": "👑"
   },
   "mess": {
-    "addNewContact": "Salut, moi c'est Warano. On s'enregistre"
+    "addNewContact": ""
   },
   "statusblacklist": [],
   "sudo": [

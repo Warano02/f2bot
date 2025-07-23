@@ -509,7 +509,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         ? JSON.parse(fs.readFileSync(ALL_CONTACTS_PATH, 'utf-8'))
         : [];
 
-    const mess = GETPRIVACY()?.mess?.addNewContact || "*Hi 🖖. Save me as Warano*";
+    const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi 🖖. Save me as ${Tayc?.user?.name}*`;
 
     const extractPhoneNumber = (vcard = "") => {
         const match = vcard.match(/TEL.*:(.+)/);
