@@ -96,9 +96,7 @@ module.exports = [
                 const category = __source[__source.length - 1].split(".")[0].toUpperCase()
                 return { category, command: command.command.map(e=>prefix+e), desc: command.desc }
             })
-           // console.log(commandList);
             let i = 0
-
             react("🧠")
             while (i < 4) {
                 try {
@@ -108,15 +106,11 @@ module.exports = [
                     return reply(data?.msg)
                 } catch (e) {
                      i++
-                     console.log(i);
-                     
-                    console.log(e);
                 }
             }
             react("❌")
             reply("❌*Please try again*")
         }
-
     }
 
 ]

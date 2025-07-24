@@ -13,7 +13,7 @@ const {
     jidNormalizedUser,
     makeCacheableSignalKeyStore
 } = require("@whiskeysockets/baileys")
-
+require("./src/db/config")
 const { handleMessages, handleGroupParticipantUpdate, handleStatusUpdate, ScheduledMessages } = require('./main')
 const { loadCommands, watchCommands } = require('./src/lib/loader')
 

@@ -95,26 +95,107 @@ module.exports = [
         }
     },
     {
-  command: ['facebook', 'fbdl'],
-  desc:"Download Facebook video",
-  operate: async ({ m, text, Tayc, reply }) => {
-    if (!text) return reply(`*Please provide a Facebook video url!*`);
-    
-    try {
-      var dlink = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
-      var dlurl = dlink.data.high;
-      
-      await Tayc.sendMessage(m.chat, {
-        video: {
-          url: dlurl,
-          caption: global.botname
+        command: ['facebook', 'fbdl'],
+        desc: "Download Facebook video",
+        operate: async ({ m, text, Tayc, reply }) => {
+            if (!text) return reply(`*Please provide a Facebook video url!*`);
+
+            try {
+                var dlink = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
+                var dlurl = dlink.data.high;
+
+                await Tayc.sendMessage(m.chat, {
+                    video: {
+                        url: dlurl,
+                        caption: global.botname
+                    }
+                }, {
+                    quoted: m
+                });
+            } catch (error) {
+                reply('*❌ Please try again later*');
+            }
         }
-      }, {
-        quoted: m
-      });
-    } catch (error) {
-      reply('*❌ Please try again later*');
-    }
-  }
-},
+    },
+    {
+        command: ['gdrive'],
+        operate: async ({ Tayc, m, reply, text }) => {
+            if (!text) return reply("*Please provide a Google Drive file URL*");
+
+            try {
+                let response = await fetch(`${global.siputzx}/api/d/gdrive?url=${encodeURIComponent(text)}`);
+                let data = await response.json();
+
+                if (response.status !== 200 || !data.status || !data.data) {
+                    return reply("*Please try again later or try another command!*");
+                } else {
+                    const downloadUrl = data.data.download;
+                    const filePath = path.join(__dirname, `${data.data.name}`);
+
+                    const writer = fs.createWriteStream(filePath);
+                    const fileResponse = await axios({
+                        url: downloadUrl,
+                        method: 'GET',
+                        responseType: 'stream'
+                    });
+
+                    fileResponse.data.pipe(writer);
+
+                    writer.on('finish', async () => {
+                        await Tayc.sendMessage(m.chat, {
+                            document: { url: filePath },
+                            fileName: data.data.name,
+                            mimetype: fileResponse.headers['content-type']
+                        });
+
+                        fs.unlinkSync(filePath);
+                    });
+
+                    writer.on('error', (err) => {
+                        console.error('Error downloading the file:', err);
+                        reply("An error occurred while downloading the file.");
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching Google Drive file details:', error);
+                reply("*Please try again!*");
+            }
+        }
+    },
+    {
+        command: ['gitclone'],
+        operate: async ({ m, args, prefix, command, Tayc, reply, mess,  }) => {
+            if (!args[0])
+                return reply(`*GitHub link to clone?*\nExample :\n${prefix}${command} https://github.com/warano02/Tayc`);
+            const regex1 = /(?:https|git)(?::\/\/|@)(www\.)?github\.com[\/:]([^\/:]+)\/(.+)/i;
+            const [, , user, repo] = args[0].match(regex1) || [];
+
+            if (!repo) {
+                return reply("*Invalid GitHub link format. Please double-check the provided link.*");
+            }
+
+            const repoName = repo.replace(/.git$/, "");
+            const url = `https://api.github.com/repos/${user}/${repoName}/zipball`;
+
+            try {
+                const response = await fetch(url, { method: "HEAD" });
+                const filename = response.headers
+                    .get("content-disposition")
+                    .match(/attachment; filename=(.*)/)[1];
+
+                await Tayc.sendMessage(
+                    m.chat,
+                    {
+                        document: { url: url },
+                        fileName: filename + ".zip",
+                        mimetype: "application/zip",
+                    },
+                    { quoted: m }
+                );
+            } catch (err) {
+                console.error(err);
+                reply(mess.error);
+            }
+        }
+    },
 ]
