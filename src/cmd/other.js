@@ -32,37 +32,41 @@ module.exports = [
     },
     {
         command: ['repo', 'repository'],
-        desc: "Show the bot deployment method via git or website",
+        desc: "Show the bot deployment method via GitHub",
         operate: async ({ m, Tayc, reply }) => {
             try {
                 const { data } = await axios.get('https://api.github.com/repos/warano02/tayc');
+
                 const repoInfo = `
-        *🔄️ BOT REPOSITORY 🔄️*
-        
-🧱 *Name:* ${data.name}
-🧱 *Stars:* ${data.stargazers_count}
-🧱 *Forks:* ${data.forks_count}
-🧱 *GitHub Link:* 
-https://github.com/warano02/tayc
+*🔄 BOT REPOSITORY 🔄*
 
-@${m.sender.split("@")[0]}👋, Don't forget to star and fork my repository!`;
+📦 *Name:* ${data.name}
+⭐ *Stars:* ${data.stargazers_count}
+🍴 *Forks:* ${data.forks_count}
+🔗 *GitHub:* https://github.com/warano02/tayc
 
-                Tayc.sendMessage(m.chat, {
-                    text: repoInfo.trim(),
+👋 @${m.sender.split("@")[0]}, don’t forget to ⭐ star & 🍴 fork the repo!
+            `.trim();
+
+                await Tayc.sendMessage(m.chat, {
+                    text: repoInfo,
                     contextInfo: {
                         mentionedJid: [m.sender],
                         externalAdReply: {
-                            title: "Tayc Repository",
-                            thumbnail: "https://i.ibb.co/rKbXNwg5/Chat-GPT-Image-Jul-24-2025-09-26-56-AM.png",
-                            mediaType: 1
+                            title: "Tayc WhatsApp Bot",
+                            body: "Click to view source code",
+                            mediaType: 1,
+                            thumbnailUrl: "https://i.ibb.co/rKbXNwg5/Chat-GPT-Image-Jul-24-2025-09-26-56-AM.png",
+                            sourceUrl: "https://github.com/warano02/tayc"
                         }
                     }
                 }, { quoted: m });
-            } catch (error) {
-                console.log(error);
 
+            } catch (error) {
+                console.error("Error fetching GitHub repo:", error);
                 reply('❌ *Error fetching repository details.*');
             }
         }
-    },
+    }
+
 ]
