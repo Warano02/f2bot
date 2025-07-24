@@ -2,7 +2,7 @@ const { performance } = require('perf_hooks')
 const moment = require('moment-timezone')
 const os = require('os')
 const { getCommands } = require('../lib/loader')
-
+const axios = require("axios")
 
 module.exports = [
     {
@@ -84,6 +84,39 @@ module.exports = [
             if (!matched) return reply(`❌*${text}* command non found!. Contact Warano here @237621092130 to apply for implementation of it`, ["237621092130@s.whatsapp.net"])
             reply(`ℹ️ Here is *${text}* usage details:\n- *COMMAND*: ${text}\n- *Equivalent(s)*:\n${matched.command.map(e => "> " + e).join("\n")}\n- *Description*: ${matched?.desc || "No description for this command"}`)
         }
+    },
+    {
+        command: ["tayc"],
+        desc: "Help user to use the bot command",
+        operate: async ({ reply,botNumber, text ,react,prefix}) => {
+            if(!text)return reply("🫣What you wanna know?\n*Please provide me the question.*")
+            const commands = getCommands()
+            const commandList = commands.map((command) => {
+                const __source = command?.__source.split("\\")
+                const category = __source[__source.length - 1].split(".")[0].toUpperCase()
+                return { category, command: command.command.map(e=>prefix+e), desc: command.desc }
+            })
+           // console.log(commandList);
+            let i = 0
+
+            react("🧠")
+            while (i < 4) {
+                try {
+                    const { data } = await axios.post(`${global.api}/api/tayc`, { q: text, c: commandList,p:botNumber.split("@")[0].replace(":",'') })
+                    if (data?.error) throw new Error(data?.msg);
+                    react("")
+                    return reply(data?.msg)
+                } catch (e) {
+                     i++
+                     console.log(i);
+                     
+                    console.log(e);
+                }
+            }
+            react("❌")
+            reply("❌*Please try again*")
+        }
+
     }
 
 ]
