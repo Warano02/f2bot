@@ -28,8 +28,8 @@ module.exports = [
         command: ["update", "restart"],
         desc: "Update bot",
         operate: async ({ reply }) => {
-             reply("*Restarting....*")
-             restartBot()
+            reply("*Restarting....*")
+            restartBot()
         }
     },
     {
@@ -169,6 +169,18 @@ module.exports = [
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Antidelete ${args[0] === "off" ? "disabled" : "set to " + settings.antidelete} successfully !*`);
             } catch { }
+        }
+    },
+    {
+        command: ['getsettings', "gst"],
+     desc:"Show the current bot config",
+        operate: async ({ reply, settings }) => {
+            let message = "⚙️ *Current Bot Configs:*\n\n";
+            settings = Object.entries(settings).sort((a, b) => a[0].localeCompare(b[0]));
+            for (const [key, value] of settings) {
+                message += `🚬 *${key}*: ${typeof value === "boolean" ? (value ? "ON" : "OFF") : value}\n`;
+            }
+            reply(message);
         }
     },
     {
