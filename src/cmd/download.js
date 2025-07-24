@@ -222,7 +222,7 @@ module.exports = [
 
                 for (const image of images) {
                     console.log(image);
-                    
+
                     try {
                         const imgRes = await axios.get(image?.image_url, { responseType: 'arraybuffer' });
                         const buffer = Buffer.from(imgRes.data);
@@ -243,66 +243,49 @@ module.exports = [
     },
     {
         command: ['itunes'],
-        desc: "Give stat of an song in the itunes application",
+        desc: "Get information about a song from iTunes",
         operate: async ({ m, text, Tayc, reply }) => {
-            if (!text) return reply("*Please provide a song name*");
+            if (!text) return reply("*❗ Please provide the name of a song.*");
 
             try {
-                let res = await fetch(`https://api.popcat.xyz/itunes?q=${encodeURIComponent(text)}`);
+                const res = await fetch(`https://api.popcat.xyz/itunes?q=${encodeURIComponent(text)}`);
                 if (!res.ok) {
-                    throw new Error(`*API request failed with status ${res.status}*`);
+                    throw new Error(`API responded with status ${res.status}`);
                 }
-                let json = await res.json();
-                let songInfo = `*Song Information:*\n
- • *Name:* ${json.name}\n
- • *Artist:* ${json.artist}\n
- • *Album:* ${json.album}\n
- • *Release Date:* ${json.release_date}\n
- • *Price:* ${json.price}\n
- • *Length:* ${json.length}\n
- • *Genre:* ${json.genre}\n
- • *URL:* ${json.url}`;
+
+                const json = await res.json();
+
+                if (!json.name || !json.artist) {
+                    return reply("*❌ Song not found. Please try a different title.*");
+                }
+
+                const songInfo = `*🎵 Song Information:*\n\n` +
+                    `• *Name:* ${json.name}\n\n` +
+                    `• *Artist:* ${json.artist}\n\n` +
+                    `• *Album:* ${json.album}\n\n` +
+                    `• *Release Date:* ${json.release_date}\n\n` +
+                    `• *Price:* ${json.price}\n\n` +
+                    `• *Length:* ${json.length}\n\n` +
+                    `• *Genre:* ${json.genre}\n\n` +
+                    `• *Preview:* ${json.url}`;
 
                 if (json.thumbnail) {
                     await Tayc.sendMessage(
                         m.chat,
-                        { image: { url: json.thumbnail }, caption: songInfo },
+                        {
+                            image: { url: json.thumbnail },
+                            caption: songInfo
+                        },
                         { quoted: m }
                     );
                 } else {
                     reply(songInfo);
                 }
+
             } catch (error) {
-                console.error(error);
-                reply(global.mess.error);
+                console.error("Error fetching iTunes data:", error);
+                reply("*❌ An error occurred while fetching the song info. Please try again later.*");
             }
         }
-    },
-    {
-        command: ['pinterest'],
-        desc: "Download a pinterest image",
-        operate: async ({ Tayc, m, reply, text }) => {
-            if (!text) return reply("*Please provide a search query*");
-
-            try {
-                let response = await fetch(`${global.siputzx}/api/s/pinterest?query=${encodeURIComponent(text)}`);
-                let data = await response.json();
-
-                if (response.status !== 200 || !data.status || !data.data || data.data.length === 0) {
-                    return reply("*Please try again later or try another command!*");
-                } else {
-                    // Send only the first image
-                    const image = data.data[0];
-
-                    await Tayc.sendMessage(m.chat, {
-                        image: { url: image.images_url },
-                        caption: `Title: ${image.grid_title}\nLink: ${image.link}`
-                    });
-                }
-            } catch (error) {
-                console.error('Error fetching Pinterest images:', error);
-                reply(global.mess.error);
-            }
-        }
-    },
+    }
 ]
