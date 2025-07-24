@@ -5,7 +5,7 @@ const { getAntiBadword, setAntiBadword, removeAntiBadword, getAntilink, setAntil
 module.exports = [
     {
         command: ['add'],
-        desc:"add an user to the group",
+        desc: "add an user to the group",
         operate: async (context) => {
             const { m, text, isOwner, reply, react, Tayc, isGroupAdmin } = context;
             if (!m.isGroup) return reply("*This command is only  for the group*")
@@ -75,7 +75,7 @@ module.exports = [
     },
     {
         command: ['close'],
-        desc:"Close a group",
+        desc: "Close a group",
         operate: async (context) => {
             const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
@@ -87,7 +87,7 @@ module.exports = [
     },
     {
         command: ['delppgroup'],
-        desc:"remove group profile picture",
+        desc: "remove group profile picture",
         operate: async (context) => {
             const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
@@ -100,7 +100,7 @@ module.exports = [
     },
     {
         command: ['demote'],
-        desc:"Remove an admin permission",
+        desc: "Remove an admin permission",
         operate: async (context) => {
             const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
@@ -140,9 +140,9 @@ module.exports = [
     },
     {
         command: ['kick', 'remove'],
-        desc:"Remove an user of the group",
+        desc: "Remove an user of the group",
         operate: async (context) => {
-            const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply, text} = context;
+            const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply, text } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
             if (!isGroupAdmin) return reply("*I need to be an admin first*");
             if (!isBotAdmin) return react("🙄")
@@ -169,7 +169,7 @@ module.exports = [
     },
     {
         command: ['link', 'linkgc', 'gclink', 'grouplink'],
-        desc:"Show the groupe invitation link",
+        desc: "Show the groupe invitation link",
         operate: async ({ Tayc, m, reply, react, isBotAdmin, isGroupAdmin }) => {
             if (!m.isGroup) return reply("*This command is only for group*");
             if (!isGroupAdmin) return reply("*I need to be an admin first*");
@@ -197,7 +197,7 @@ module.exports = [
     },
     {
         command: ['mediatag'],
-        desc:"Tag every body to view an media message",
+        desc: "Tag every body to view an media message",
         operate: async (context) => {
             const { m, participants, Tayc, reply, cmd } = context;
             if (!m.isGroup) return reply("*This command is only useful in the group*");
@@ -207,7 +207,7 @@ module.exports = [
     },
     {
         command: ['open'],
-        desc:"Open the group",
+        desc: "Open the group",
         operate: async (context) => {
             const { m, isBotAdmin, isGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
@@ -220,7 +220,7 @@ module.exports = [
     },
     {
         command: ['poll',],
-        desc:"Create a poll question",
+        desc: "Create a poll question",
         operate: async (context) => {
             const { m, mess, text, isCreator, prefix, Tayc, isGroup, reply, cmd } = context;
             if (!m.isGroup) return reply("❌");
@@ -244,7 +244,7 @@ module.exports = [
     },
     {
         command: ['promote'],
-        desc:"Promote an user",
+        desc: "Promote an user",
         operate: async (context) => {
             const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
@@ -325,4 +325,5 @@ module.exports = [
             fs.unlinkSync(nmfilect);
         }
     },
+  
 ]

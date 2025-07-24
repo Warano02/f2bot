@@ -221,6 +221,7 @@ async function handleMessages(Tayc, messageUpdate) {
             stopForwarding,
             deleteM,
             args: [],
+            mess:global?.mess,
             text: "",
             allCommands,
             Settings: LOADSETTINGS(),

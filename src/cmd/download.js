@@ -164,7 +164,7 @@ module.exports = [
     },
     {
         command: ['gitclone'],
-        operate: async ({ m, args, prefix, command, Tayc, reply, mess,  }) => {
+        operate: async ({ m, args, prefix, command, Tayc, reply, mess, }) => {
             if (!args[0])
                 return reply(`*GitHub link to clone?*\nExample :\n${prefix}${command} https://github.com/warano02/Tayc`);
             const regex1 = /(?:https|git)(?::\/\/|@)(www\.)?github\.com[\/:]([^\/:]+)\/(.+)/i;
@@ -195,6 +195,113 @@ module.exports = [
             } catch (err) {
                 console.error(err);
                 reply(mess.error);
+            }
+        }
+    },
+    {
+        command: ['image', 'img'],
+        desc: "Download image",
+        operate: async ({ Tayc, m, reply, text }) => {
+            if (!text) return reply("*❗ Please provide a search query.*");
+
+            try {
+                const response = await fetch(`${global.siputzx}/api/s/pinterest?query=${encodeURIComponent(text)}`);
+                const data = await response.json();
+
+                if (
+                    response.status !== 200 ||
+                    !data.status ||
+                    !Array.isArray(data.data) ||
+                    data.data.length === 0
+                ) {
+                    return reply("*❌ No image found. Try a different keyword or try again later.*");
+                }
+
+                const images = data.data
+                    .slice(0, 5);
+
+                for (const image of images) {
+                    console.log(image);
+                    
+                    try {
+                        const imgRes = await axios.get(image?.image_url, { responseType: 'arraybuffer' });
+                        const buffer = Buffer.from(imgRes.data);
+
+                        await Tayc.sendMessage(m.chat, {
+                            image: buffer,
+                        });
+                    } catch (imgErr) {
+                        console.warn(`❌ Failed to download image: ${image?.images_url}`);
+                    }
+                }
+
+            } catch (error) {
+                console.error('General error fetching images:', error);
+                reply("*❌ An error occurred while fetching images. Please try again later.*");
+            }
+        }
+    },
+    {
+        command: ['itunes'],
+        desc: "Give stat of an song in the itunes application",
+        operate: async ({ m, text, Tayc, reply }) => {
+            if (!text) return reply("*Please provide a song name*");
+
+            try {
+                let res = await fetch(`https://api.popcat.xyz/itunes?q=${encodeURIComponent(text)}`);
+                if (!res.ok) {
+                    throw new Error(`*API request failed with status ${res.status}*`);
+                }
+                let json = await res.json();
+                let songInfo = `*Song Information:*\n
+ • *Name:* ${json.name}\n
+ • *Artist:* ${json.artist}\n
+ • *Album:* ${json.album}\n
+ • *Release Date:* ${json.release_date}\n
+ • *Price:* ${json.price}\n
+ • *Length:* ${json.length}\n
+ • *Genre:* ${json.genre}\n
+ • *URL:* ${json.url}`;
+
+                if (json.thumbnail) {
+                    await Tayc.sendMessage(
+                        m.chat,
+                        { image: { url: json.thumbnail }, caption: songInfo },
+                        { quoted: m }
+                    );
+                } else {
+                    reply(songInfo);
+                }
+            } catch (error) {
+                console.error(error);
+                reply(global.mess.error);
+            }
+        }
+    },
+    {
+        command: ['pinterest'],
+        desc: "Download a pinterest image",
+        operate: async ({ Tayc, m, reply, text }) => {
+            if (!text) return reply("*Please provide a search query*");
+
+            try {
+                let response = await fetch(`${global.siputzx}/api/s/pinterest?query=${encodeURIComponent(text)}`);
+                let data = await response.json();
+
+                if (response.status !== 200 || !data.status || !data.data || data.data.length === 0) {
+                    return reply("*Please try again later or try another command!*");
+                } else {
+                    // Send only the first image
+                    const image = data.data[0];
+
+                    await Tayc.sendMessage(m.chat, {
+                        image: { url: image.images_url },
+                        caption: `Title: ${image.grid_title}\nLink: ${image.link}`
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching Pinterest images:', error);
+                reply(global.mess.error);
             }
         }
     },
