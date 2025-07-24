@@ -48,16 +48,22 @@ module.exports = [
         }
     },
     {
-        command: ['imagen'],
-        desc: "Generate image",
-        operate: async ({ Tayc, m, reply, text }) => {
-            if (!text) return reply("*Please provide text*");
+        command: ['llama'],
+        desc: "Ask question to llama Ai",
+        operate: async ({ m, reply, text }) => {
+            if (!text) return reply("*❌Please provide the question*");
 
-            const api2Url = `https://bk9.fun/ai/magicstudio?prompt=${encodeURIComponent(text)}`;
             try {
-                await Tayc.sendMessage(m.chat, { image: { url: api2Url } }, { quoted: m });
+                let response = await fetch(`https://bk9.fun/ai/llama?q=${encodeURIComponent(text)}`);
+                let data = await response.json();
+
+                if (!data.BK9) {
+                    reply(global.mess.error);
+                } else {
+                    reply(data.BK9);
+                }
             } catch (error) {
-                console.error('Error generating image:', error);
+                console.error('Error fetching response from Llama API:', error);
                 reply(global.mess.error);
             }
         }
