@@ -1,1 +1,24 @@
-{}
+{
+  "237692883017@s.whatsapp.net": [
+    {
+      "role": "client",
+      "text": "Bonjour",
+      "timestamp": "2025-07-24T20:18:27.487Z"
+    },
+    {
+      "role": "client",
+      "text": "Bonjour",
+      "timestamp": "2025-07-24T20:28:13.209Z"
+    },
+    {
+      "role": "client",
+      "text": "Bonjour",
+      "timestamp": "2025-07-24T20:32:07.716Z"
+    },
+    {
+      "role": "client",
+      "text": "Comment t'appelle tu?",
+      "timestamp": "2025-07-24T20:33:53.875Z"
+    }
+  ]
+}

@@ -43,10 +43,6 @@ const cleanTempFolderIfLarge = () => {
 
 setInterval(cleanTempFolderIfLarge, 60 * 1000);
 
-// a terminer
-async function handleChatbotResponse() {
-    return true
-}
 async function handleDemotionEvent() {
     return true
 }
@@ -176,15 +172,6 @@ async function handleMessages(Tayc, messageUpdate) {
             return;
         }
 
-
-
-
-        // === Chatbot mode ===
-        if (!m.body.startsWith(prefix) && !fromGroup && settings.chatbot === "on") {
-            await handleChatbotResponse(Tayc, chatId, m, m.body.toLowerCase(), senderJid);
-            return;
-        }
-
         // === Build context ===
         const context = {
             sendPrivate,// Send message private to the bot admin
@@ -204,6 +191,7 @@ async function handleMessages(Tayc, messageUpdate) {
             isBotAdmin,            // whether it's an admin or sudo
             isOwner: isBotAdmin,   // alias
             isBotUser: m.fromMe,
+            simulatePresence,
             botNumber,             // bot number
             prefix,
             from: chatId,          // alias
@@ -221,7 +209,7 @@ async function handleMessages(Tayc, messageUpdate) {
             stopForwarding,
             deleteM,
             args: [],
-            mess:global?.mess,
+            mess: global?.mess,
             text: "",
             allCommands,
             Settings: LOADSETTINGS(),
@@ -230,6 +218,13 @@ async function handleMessages(Tayc, messageUpdate) {
             cmd: "",
             raw: message           // original Baileys message
         };
+
+        // === Chatbot mode ===
+        if (!m.body.startsWith(prefix) && !fromGroup && settings.chatbot === "on") {
+            await handleChatbotResponse(context);
+            return;
+        }
+
 
         // === Antilink / Badwords ===
         if (fromGroup && m.body) {
@@ -282,6 +277,27 @@ async function handleMessages(Tayc, messageUpdate) {
             text: '❌ Message handling failed:\n\n' + error.message,
         });
     }
+}
+
+// Chatbot
+async function handleChatbotResponse({ m, Tayc, chatId,simulatePresence, body, reply, botNumber }) {
+    if (m.fromMe || !body) return
+    const prompt = getPrompt()
+    const payload = {
+        name: Tayc?.user?.name,
+        phone: botNumber.split("@")[0].replace(":", ""),
+        chatId, msg: body, prompt
+    }
+    try {
+        simulatePresence("composing",8000)
+        const { data } = await axios.post(global.api + "/api/chatbot", payload)
+        if(data?.error)throw new Error(data);
+        reply(data.msg)
+    } catch (e) {
+        console.log(e);
+        reply(e?.msg||"*🔄️*")
+    }
+
 }
 
 async function handleGroupParticipantUpdate(Tayc, update) {
@@ -565,7 +581,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
     if (count > 0) {
         fs.writeFileSync(ALL_CONTACTS_PATH, JSON.stringify(CONTACTS, null, 2));
         console.table(newlySent);
-    } 
+    }
 }
 
 // when user reply to message
