@@ -1,4 +1,5 @@
-const axios = require("axios")
+const axios = require("axios");
+const { runtime } = require("../../lib/myfunc");
 module.exports = [
     {
         command: ['ping', 'p'],
@@ -67,6 +68,14 @@ module.exports = [
                 reply('❌ *Error fetching repository details.*');
             }
         }
-    }
+    },
+    {
+        command: ['runtime', 'uptime'],
+        desc: "Give a bot uptime",
+        operate: async ({ reply }) => {
+            const botUptime = runtime(process.uptime());
+            reply(`*🔹 ${botUptime}*`);
+        }
+    },
 
 ]
