@@ -1,7 +1,7 @@
 {
   "settings": {
     "prefix": ".",
-    "chatbot": "on",
+    "chatbot": "off",
     "menustyle": "1",
     "autorecordtype": "off",
     "autoread": "off",
