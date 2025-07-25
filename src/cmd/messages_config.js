@@ -2,8 +2,8 @@ module.exports = [
     {
         command: ["getaddmessage", "getaddmess", "gam"],
         desc: "Get a Add message",
-        operate: async ({ reply, Settings }) => {
-            reply(`*YOUR ACTUAL ADD MESSAGE IS*:\n${Settings.mess.addNewContact || 'Hi,is warano. Save for save !'}`)
+        operate: async ({ reply, Settings,Tayc }) => {
+            reply(`*YOUR ACTUAL ADD MESSAGE IS*:\n${Settings.mess.addNewContact || '*Hi 🖖. Save me as '+Tayc.user.name+"*"}`)
         }
     },
     {

@@ -33,7 +33,7 @@ function generateBotInfoCard({
     name = "TAYC",
     username = "Warano Dev",
     platform = "Panel",
-    prefix = "[ . ]",
+    prefix = ".",
     mode = "Private",
     version = "1.0.0",
     link = "https://sapjasha.com"
@@ -42,7 +42,7 @@ function generateBotInfoCard({
 *╔───────* *『*  *${name}*  *』* *═───────╗*
 *»*  *Username:* *${username}*  
 *»*  *Platform:* *${platform}*  
-*»*  *Prefix:* *${prefix}*  
+*»*  *Prefix:* *[ ${prefix} ]*  
 *»*  *Mode:* *${mode}*  
 *»*  *Version:* *[ ${version} ]*  
 *»*  ${link}  

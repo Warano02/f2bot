@@ -16,6 +16,7 @@ const viewOnceUtils = require('./src/utils/common/viewonce.js');
 const statusDownloader = require('./src/utils/common/status.js');
 
 const messageStore = new Map();
+const addQeu = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const ALL_CONTACTS_PATH = path.join(__dirname, "./src/db/contacts.json")
@@ -219,6 +220,10 @@ async function handleMessages(Tayc, messageUpdate) {
             raw: message           // original Baileys message
         };
 
+
+        // === When user where bot have send message respond ===
+        if (addQeu.has(chatId)) return handleAddUserResponse(context)
+
         // === Chatbot mode ===
         if (!m.body.startsWith(prefix) && !fromGroup && settings.chatbot === "on") {
             await handleChatbotResponse(context);
@@ -280,7 +285,7 @@ async function handleMessages(Tayc, messageUpdate) {
 }
 
 // Chatbot
-async function handleChatbotResponse({ m, Tayc, chatId,simulatePresence, body, reply, botNumber }) {
+async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, reply, botNumber }) {
     if (m.fromMe || !body) return
     const prompt = getPrompt()
     const payload = {
@@ -289,13 +294,13 @@ async function handleChatbotResponse({ m, Tayc, chatId,simulatePresence, body, r
         chatId, msg: body, prompt
     }
     try {
-        simulatePresence("composing",8000)
+        simulatePresence("composing", 8000)
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
-        if(data?.error)throw new Error(data);
+        if (data?.error) throw new Error(data);
         reply(data.msg)
     } catch (e) {
         console.log(e);
-        reply(e?.msg||"*🔄️*")
+        reply(e?.msg || "*🔄️*")
     }
 
 }
@@ -571,6 +576,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         try {
             await sleep(3000)
             await Tayc.sendMessage(jid, { text: mess });
+            addQeu.set(jid, { number, jid })
             CONTACTS.push(jid);
             count++;
             newlySent.push({ name: contact.displayName, number, jid });
