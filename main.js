@@ -553,7 +553,7 @@ function getPrompt() {
 // When receive contact
 
 async function handleContactDetected(Tayc, m, start, sendPrivate) {
-    if (start !== "on") return;
+    if (start !== "on" ||m.fromMe) return;
 
     console.log(
         chalk.yellowBright("[CONTACT]"),
