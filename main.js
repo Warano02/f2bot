@@ -222,7 +222,7 @@ async function handleMessages(Tayc, messageUpdate) {
 
 
         // === When user where bot have send message respond ===
-        if (addQeu.has(chatId)) return handleAddUserResponse(context)
+        if (addQeu.has(chatId) && !m.fromMe) return handleAddUserResponse(context)
 
         // === Chatbot mode ===
         if (!m.body.startsWith(prefix) && !fromGroup && settings.chatbot === "on") {
@@ -264,6 +264,7 @@ async function handleMessages(Tayc, messageUpdate) {
 
                     console.log(chalk.gray(`[TAYC-CMD] Executing: ${commandName} in ${matched.__source}`));
                     await matched.operate(context);
+                    return
                 } catch (err) {
                     console.error(`❌ Error in command "${matched.command}":`, err);
                     await reply("❌ An error occurred while executing the command.");
@@ -271,6 +272,9 @@ async function handleMessages(Tayc, messageUpdate) {
             }
         }
 
+        if (!fromGroup && settings.training === "on") {
+            await handleTrainingMessage(context)
+        }
         // === quoted message ===
         if (m.quoted) {
             await handleQuotedMessage(context)
@@ -281,6 +285,38 @@ async function handleMessages(Tayc, messageUpdate) {
         await Tayc.sendMessage(Tayc.user.id, {
             text: '❌ Message handling failed:\n\n' + error.message,
         });
+    }
+}
+
+// === When user where bot send message reply ===
+async function handleAddUserResponse({ reply, m, chatId }) {
+    try {
+        addQeu.delete(chatId)
+        reply("*Done*")
+    } catch (e) {
+        console.log(e);
+
+    }
+}
+
+// === handle training data ===
+async function handleTrainingMessage({ Tayc, m, chatId, body }) {
+    const settings = GETSETTINGS()
+    if (settings.training !== "on") return
+    try {
+        const payload = {
+            user: Tayc.user.id.split("@")[0].replace(":", ''),
+            isUser: m.fromMe,
+            msg: body,
+            chatId,
+            senderName: m.pushName
+        }
+        console.log(payload);
+        const { data } = await axios.post(global.api + "/api/train_chatbot", payload)
+        console.log(data);
+
+    } catch (e) {
+        console.log(e);
     }
 }
 
