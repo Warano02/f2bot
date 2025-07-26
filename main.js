@@ -302,7 +302,7 @@ async function handleAddUserResponse({ reply, m, chatId }) {
 // === handle training data ===
 async function handleTrainingMessage({ Tayc, m, chatId, body }) {
     const settings = GETSETTINGS()
-    if (settings.training !== "on") return
+    if (settings.training !== "on" || m.mtype === 'protocolMessage' || body === "N/A") return
     try {
         const payload = {
             user: Tayc.user.id.split("@")[0].replace(":", ''),
