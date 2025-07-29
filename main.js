@@ -326,7 +326,7 @@ async function handleTrainingMessage({ Tayc, m, chatId, botNumber,prefix, Settin
         switch (code) {
             case 402:
                 // Handle payment required error
-                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `, mentions: contacts.map(c => c + "@s.whatsapp.net") });
+                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `,quoted:m, mentions: contacts.map(c => c + "@s.whatsapp.net") });
                 break;
             default:
                 break;
@@ -340,7 +340,7 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, 
     const prompt = getPrompt()
     const payload = {
         name: Tayc?.user?.name,
-        phone: botNumber.split("@")[0].replace(":", ""),
+        phone: botNumber.split("@")[0].split(":")[0],
         chatId, msg: body, prompt
     }
     try {

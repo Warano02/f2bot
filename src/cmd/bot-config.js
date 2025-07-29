@@ -55,7 +55,7 @@ module.exports = [
                 if (!text || !["on", "off"].includes(text)) return reply(`❌ Invalid argument. Please use "on" or "off".`)
                 if (text === "on") {
                     if (settings.training === "on") return reply("❌ *Training mode is already enabled.*");
-                    const { data } = await axios.get(global.api + "/api/check_training", { headers: { "user": botNumber.split("@")[0].replace(":", "") } });
+                    const { data } = await axios.get(global.api + "/api/check_training", { headers: { "user": botNumber.split("@")[0].split(":")[0] } });
                     if (data?.error) throw new Error(data);
                     settings.training = "on";
                     saveNewSetting({ ...Settings, settings });
