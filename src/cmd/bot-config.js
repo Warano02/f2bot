@@ -1,5 +1,6 @@
 const fsp = require('fs/promises')
 const { spawn } = require('child_process');
+const axios = require('axios');
 
 function restartBot() {
     console.clear();
@@ -44,6 +45,28 @@ module.exports = [
 
                 reply(`*✅ Chatbot ${args[0] === "on" ? "enabled" : "disabled"} successfully !*`);
             } catch { }
+        }
+    },
+    {
+        command: ["training", "training_chatbot", "tnc"],
+        desc: "Enable or disable the chatbot training mode",
+        operate: async ({ reply, text, Tayc, Settings, saveNewSetting, settings, botNumber, }) => {
+            try {
+                if (!text || !["on", "off"].includes(text)) return reply(`❌ Invalid argument. Please use "on" or "off".`)
+                if (text === "on") {
+                    if (settings.training === "on") return reply("❌ *Training mode is already enabled.*");
+                    const { data } = await axios.get(global.api + "/api/check_training", { headers: { "user": botNumber.split("@")[0].replace(":", "") } });
+                    if (data?.error) throw new Error(data);
+                    settings.training = "on";
+                    saveNewSetting({ ...Settings, settings });
+                } else {
+                    settings.training = "off";
+                    saveNewSetting({ ...Settings, settings });
+                }
+                reply(`*✅ Chatbot training mode ${text === "on" ? "enabled" : "disabled"} successfully !*`);
+            } catch (e) {
+                reply(`❌*Error occurred while trying to control chatbot training mode.* Details:\n- *Status*: ${e?.response?.status || 500}\n- *Message*: ${e?.response?.data?.msg || e?.message}.\n\n*If you think this is a mistake, please contact the bot owner via @237692883017.*`,["237692883017@s.whatsapp.net"]);
+            }
         }
     },
     {
@@ -173,7 +196,7 @@ module.exports = [
     },
     {
         command: ['getsettings', "gst"],
-     desc:"Show the current bot config",
+        desc: "Show the current bot config",
         operate: async ({ reply, settings }) => {
             let message = "⚙️ *Current Bot Configs:*\n\n";
             settings = Object.entries(settings).sort((a, b) => a[0].localeCompare(b[0]));

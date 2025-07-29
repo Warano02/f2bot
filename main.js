@@ -172,6 +172,7 @@ async function handleMessages(Tayc, messageUpdate) {
             await handleMessageEdit(Tayc, message, botNumber);
             return;
         }
+        if (m?.mtype === "protocolMessage") return
 
         // === Build context ===
         const context = {
@@ -300,23 +301,36 @@ async function handleAddUserResponse({ reply, m, chatId }) {
 }
 
 // === handle training data ===
-async function handleTrainingMessage({ Tayc, m, chatId, body }) {
+async function handleTrainingMessage({ Tayc, m, chatId, botNumber,prefix, Settings, body }) {
     const settings = GETSETTINGS()
     if (settings.training !== "on" || m.mtype === 'protocolMessage' || body === "N/A") return
     try {
+        const user = Tayc.user.id.split("@")[0].replace(":", '')
+
         const payload = {
-            user: Tayc.user.id.split("@")[0].replace(":", ''),
+            user,
             isUser: m.fromMe,
             msg: body,
             chatId,
             senderName: m.pushName
         }
-        console.log(payload);
-        const { data } = await axios.post(global.api + "/api/train_chatbot", payload)
-        console.log(data);
 
+        const { data } = await axios.post(global.api + "/api/train_chatbot", payload, { headers: { user } })
     } catch (e) {
         console.log(e);
+        const code = e?.response?.status || 500;
+        const contacts = ["237692883017", "237621092130"]
+        settings.training = "off"
+        saveNewSetting({ ...Settings, settings })
+
+        switch (code) {
+            case 402:
+                // Handle payment required error
+                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `, mentions: contacts.map(c => c + "@s.whatsapp.net") });
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -553,7 +567,7 @@ function getPrompt() {
 // When receive contact
 
 async function handleContactDetected(Tayc, m, start, sendPrivate) {
-    if (start !== "on" ||m.fromMe) return;
+    if (start !== "on" || m.fromMe) return;
 
     console.log(
         chalk.yellowBright("[CONTACT]"),

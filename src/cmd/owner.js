@@ -1,3 +1,4 @@
+const { default: axios } = require("axios");
 const { clearTmpDirectory } = require("../../lib/myfunc2");
 const fs = require("fs")
 const path = require("path")
@@ -14,9 +15,9 @@ module.exports = [
     {
         command: ["contactlist", "ctl"],
         desc: "Show all the contact that bot have send add message",
-        operate: async ({ reply,Tayc }) => {
+        operate: async ({ reply, Tayc }) => {
             const list = JSON.parse(fs.readFileSync(path.join(__dirname, "../db/contacts.json"), "utf-8"))
-            if(!list.length)return reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
+            if (!list.length) return reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
             reply(`*Here is all the contact that Tayc have send add message :*\n${list.map((e, i) => i + 1 + ". @" + e.split("@")[0]).join("\n")}`, list)
         }
     },
@@ -47,6 +48,22 @@ module.exports = [
             } catch { }
         }
     },
+    {
+        command: ["premium", "setpremium"],
+        desc: "Set the premium status of the bot",
+        operate: async ({ reply, botNumber, text, cmd }) => {
+            if (!text) return reply(`❌ *Please provide infos of who you wanna promote to premium user.*\n*Example:*\n${cmd} 23769200880066 $ Jessica\n\n> You can use the phone number and the name of the user.`);
+            const [phone, name] = text.split("$").map(e => e.trim());
+            if (!phone || !name) return reply(`❌ *Please provide infos of who you wanna promote to premium user.*\n*Example:*\n${cmd} <number> $ <name>.`);
+            try {
+                const { data } = await axios.post(global.api + "/config/set_premium", { name, phone }, { headers: { id: botNumber.split("@")[0].split(":")[0] } })
+                if (data?.error) throw new Error(data);
+                reply(data?.msg, [phone.trim() + "@s.whatsapp.net"]);
+            } catch (e) {
+                reply(`❌ *Error occurred while trying to set premium user.* Details:\n- *Status*: ${e?.response?.status || 500}\n- *Message*: ${e?.response?.data?.msg || e?.message}.\n\n> *If you think this is a mistake, please contact the bot owner via @237692883017.*`, ["237692883017@s.whatsapp.net"]);
+            }
+        }
+    }
 
 
 ]
