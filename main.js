@@ -154,7 +154,7 @@ async function handleMessages(Tayc, messageUpdate) {
         logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
         // === Receive contact ===
-        if (["contactMessage", "contactsArrayMessage"].includes(m.mtype)) {
+        if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) {
             await handleContactDetected(Tayc, m, settings.awc, sendPrivate);
             return;
         }
