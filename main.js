@@ -386,11 +386,10 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupDesc = groupMetadata.desc || 'No description available';
 
             // Get welcome message from data
-            const data = JSON.parse(fs.readFileSync('./data/userGroupData.json'));
+            const data = JSON.parse(fs.readFileSync('./src/db/userGroupData.json'));
             const welcomeData = data.welcome[id];
             const welcomeMessage = welcomeData?.message || 'Welcome {user} to the group! 🎉';
-            const channelId = welcomeData?.channelId || '120363398106360290@newsletter';
-
+         
             // Send welcome message for each new participant
             for (const participant of participants) {
                 const user = participant.split('@')[0];
@@ -402,15 +401,6 @@ async function handleGroupParticipantUpdate(Tayc, update) {
                 await Tayc.sendMessage(id, {
                     text: formattedMessage,
                     mentions: [participant],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: channelId,
-                            newsletterName: 'BWB XMD',
-                            serverMessageId: -1
-                        }
-                    }
                 });
             }
         }
@@ -426,11 +416,10 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupName = groupMetadata.subject;
 
             // Get goodbye message from data
-            const data = JSON.parse(fs.readFileSync('./data/userGroupData.json'));
+            const data = JSON.parse(fs.readFileSync('./src/db/userGroupData.json'));
             const goodbyeData = data.goodbye[id];
             const goodbyeMessage = goodbyeData?.message || 'Goodbye {user} 👋';
-            const channelId = goodbyeData?.channelId || '120363398106360290@newsletter';
-
+    
             // Send goodbye message for each leaving participant
             for (const participant of participants) {
                 const user = participant.split('@')[0];
@@ -441,15 +430,6 @@ async function handleGroupParticipantUpdate(Tayc, update) {
                 await Tayc.sendMessage(id, {
                     text: formattedMessage,
                     mentions: [participant],
-                    contextInfo: {
-                        forwardingScore: 1,
-                        isForwarded: true,
-                        forwardedNewsletterMessageInfo: {
-                            newsletterJid: channelId,
-                            newsletterName: 'BWB XMD',
-                            serverMessageId: -1
-                        }
-                    }
                 });
             }
         }
@@ -885,6 +865,94 @@ async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, delete
                 });
             }
             break;
+    }
+}
+
+// Handle promote event 
+async function handlePromotionEvent(sock, groupId, participants, author) {
+    try {
+       /* console.log('Promotion Event Data:', {
+            groupId,
+            participants,
+            author
+        });*/
+
+        // Get usernames for promoted participants
+        const promotedUsernames = await Promise.all(participants.map(async jid => {
+            return `@${jid.split('@')[0]} `;
+        }));
+
+        let promotedBy;
+        let mentionList = [...participants];
+
+        if (author && author.length > 0) {
+            // Ensure author has the correct format
+            const authorJid = author;
+            promotedBy = `@${authorJid.split('@')[0]}`;
+            mentionList.push(authorJid);
+        } else {
+            promotedBy = 'System';
+        }
+
+        const promotionMessage = `*『 GROUP PROMOTION 』*\n\n` +
+            `👥 *Promoted User${participants.length > 1 ? 's' : ''}:*\n` +
+            `${promotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
+            `👑 *Promoted By:* ${promotedBy}\n\n` +
+            `📅 *Date:* ${new Date().toLocaleString()}`;
+        
+        await sock.sendMessage(groupId, {
+            text: promotionMessage,
+            mentions: mentionList
+        });
+    } catch (error) {
+        console.error('Error handling promotion event:', error);
+    }
+}
+
+
+// Handle demote event 
+async function handleDemotionEvent(sock, groupId, participants, author) {
+    try {
+        if (!groupId || !participants)return
+
+        // Add delay to avoid rate limiting
+        await sleep(1000);
+
+        // Get usernames for demoted participants
+        const demotedUsernames = await Promise.all(participants.map(async jid => {
+            return `@${jid.split('@')[0]}`;
+        }));
+
+        let demotedBy;
+        let mentionList = [...participants];
+
+        if (author && author.length > 0) {
+            // Ensure author has the correct format
+            const authorJid = author;
+            demotedBy = `@${authorJid.split('@')[0]}`;
+            mentionList.push(authorJid);
+        } else {
+            demotedBy = 'System';
+        }
+
+        // Add delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const demotionMessage = `*『 GROUP DEMOTION 』*\n\n` +
+            `👤 *Demoted User${participants.length > 1 ? 's' : ''}:*\n` +
+            `${demotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
+            `👑 *Demoted By:* ${demotedBy}\n\n` +
+            `📅 *Date:* ${new Date().toLocaleString()}`;
+        
+        await sock.sendMessage(groupId, {
+            text: demotionMessage,
+            mentions: mentionList
+        });
+    } catch (error) {
+        console.error('Error handling demotion event:', error);
+        if (error.data === 429) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
     }
 }
 
