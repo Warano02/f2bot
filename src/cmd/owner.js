@@ -1,5 +1,5 @@
 const { default: axios } = require("axios");
-const { clearTmpDirectory } = require("../../lib/myfunc2");
+const { clearTmpDirectory } = require("../lib/myfunc2");
 const fs = require("fs")
 const path = require("path")
 module.exports = [

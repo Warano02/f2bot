@@ -17,7 +17,7 @@ require("./src/db/config")
 const { handleMessages, handleGroupParticipantUpdate, handleStatusUpdate, ScheduledMessages } = require('./main')
 const { loadCommands, watchCommands } = require('./src/lib/loader')
 
-const { startAutoClear } = require('./lib/myfunc2')
+const { startAutoClear } = require('./src//lib/myfunc2')
 global.currentClient = null
 const useMobile = process.argv.includes("--mobile")
 
