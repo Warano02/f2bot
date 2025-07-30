@@ -44,11 +44,6 @@ const cleanTempFolderIfLarge = () => {
 
 setInterval(cleanTempFolderIfLarge, 60 * 1000);
 
-async function handleDemotionEvent() {
-    return true
-}
-
-
 
 function loadAllChats() {
     try {
