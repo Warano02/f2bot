@@ -49,7 +49,7 @@ function generateBotInfoCard({
 *╚═══════════════════════╝*`.trim();
 }
 const package = require('./package.json')
-const { LOADSETTINGS } = require("./lib/myfunc")
+const { LOADSETTINGS } = require("./src/lib/myfunc")
 const stngs = LOADSETTINGS()
 
 const store = {

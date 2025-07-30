@@ -450,7 +450,7 @@ exports.reSize = (buffer, ukur1, ukur2) => {
 
 exports.GETSETTINGS = () => {
     try {
-        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/db/settings.json'), 'utf-8'))
+        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
         return data.settings
     } catch {
         return {}
@@ -459,7 +459,7 @@ exports.GETSETTINGS = () => {
 
 exports.LOADSETTINGS = () => {
     try {
-        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/db/settings.json'), 'utf-8'))
+        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
         return data
     } catch {
         return {}
@@ -468,7 +468,7 @@ exports.LOADSETTINGS = () => {
 
 exports.GETPRIVACY = () => {
     try {
-        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../src/db/settings.json'), 'utf-8'))
+        const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
         const { settings, ...value } = data
         return value
     } catch {
@@ -492,33 +492,34 @@ exports.getFolderSizeInMB = (folderPath) => {
         return 0;
     }
 };
-exports.isAdmin = async (TaycInc, chatId, senderId) => {
-    try {
-        const groupMetadata = await TaycInc.groupMetadata(chatId);
 
-        const botId = TaycInc.user.id.split(':')[0] + '@s.whatsapp.net';
+// exports.isAdmin = async (TaycInc, chatId, senderId) => {
+//     try {
+//         const groupMetadata = await TaycInc.groupMetadata(chatId);
 
-        const participant = groupMetadata.participants.find(p =>
-            p.id === senderId ||
-            p.id === senderId.replace('@s.whatsapp.net', '@lid') ||
-            p.id === senderId.replace('@lid', '@s.whatsapp.net')
-        );
+//         const botId = TaycInc.user.id.split(':')[0] + '@s.whatsapp.net';
 
-        const bot = groupMetadata.participants.find(p =>
-            p.id === botId ||
-            p.id === botId.replace('@s.whatsapp.net', '@lid')
-        );
+//         const participant = groupMetadata.participants.find(p =>
+//             p.id === senderId ||
+//             p.id === senderId.replace('@s.whatsapp.net', '@lid') ||
+//             p.id === senderId.replace('@lid', '@s.whatsapp.net')
+//         );
 
-        const isBotAdmin = bot && (bot.admin === 'admin' || bot.admin === 'superadmin');
-        const isSenderAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
+//         const bot = groupMetadata.participants.find(p =>
+//             p.id === botId ||
+//             p.id === botId.replace('@s.whatsapp.net', '@lid')
+//         );
 
-        if (!bot) {
-            return { isSenderAdmin, isBotAdmin: true };
-        }
+//         const isBotAdmin = bot && (bot.admin === 'admin' || bot.admin === 'superadmin');
+//         const isSenderAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
 
-        return { isSenderAdmin, isBotAdmin };
-    } catch (error) {
-        console.error('Error in isAdmin:', error);
-        return { isSenderAdmin: false, isBotAdmin: false };
-    }
-}
+//         if (!bot) {
+//             return { isSenderAdmin, isBotAdmin: true };
+//         }
+
+//         return { isSenderAdmin, isBotAdmin };
+//     } catch (error) {
+//         console.error('Error in isAdmin:', error);
+//         return { isSenderAdmin: false, isBotAdmin: false };
+//     }
+// }

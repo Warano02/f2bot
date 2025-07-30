@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { sleep } = require("../../lib/myfunc");
+const { sleep } = require("../lib/myfunc");
 
 module.exports = [
     {

@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 

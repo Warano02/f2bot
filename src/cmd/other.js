@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { runtime } = require("../../lib/myfunc");
+const { runtime } = require("../lib/myfunc");
 module.exports = [
     {
         command: ['ping', 'p'],

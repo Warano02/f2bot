@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { sleep } = require("../../lib/myfunc");
+const { sleep } = require("../lib/myfunc");
 const { getAntiBadword, setAntiBadword, removeAntiBadword, getAntilink, setAntilink, removeAntilink } = require('../../lib');
 
 module.exports = [

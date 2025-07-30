@@ -1,5 +1,5 @@
 const path = require("path");
-const { LOADSETTINGS } = require("../../lib/myfunc");
+const { LOADSETTINGS } = require("./myfunc");
 const fs = require("fs");
 const ALL_SETTINGS_PATH = path.join(__dirname, "../db/settings.json");
 
