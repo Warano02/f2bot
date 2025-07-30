@@ -2,7 +2,7 @@ const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } 
 const fs = require('fs');
 const path = require('path');
 
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword, getAntilink } = require('./lib/index');
+const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
