@@ -37,7 +37,7 @@ function loadUserGroupData() {
 // Function to save user and group data to JSON file
 function saveUserGroupData(data) {
     try {
-        const dataPath = path.join(__dirname, '../src/db/userGroupData.json');
+        const dataPath = path.join(__dirname, '../db/userGroupData.json');
         // Ensure the directory exists
         const dir = path.dirname(dataPath);
         if (!fs.existsSync(dir)) {

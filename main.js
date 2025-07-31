@@ -20,7 +20,7 @@ const addQeu = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const ALL_CONTACTS_PATH = path.join(__dirname, "./src/db/contacts.json")
-const ALL_GROUP_DATA_PATH=path.join(__dirname, './src/db/userGroupData.json')
+const ALL_GROUP_DATA_PATH = path.join(__dirname, './src/db/userGroupData.json')
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -296,7 +296,7 @@ async function handleAddUserResponse({ reply, m, chatId }) {
 }
 
 // === handle training data ===
-async function handleTrainingMessage({ Tayc, m, chatId, botNumber,prefix, Settings, body }) {
+async function handleTrainingMessage({ Tayc, m, chatId, botNumber, prefix, Settings, body }) {
     const settings = GETSETTINGS()
     if (settings.training !== "on" || m.mtype === 'protocolMessage' || body === "N/A") return
     try {
@@ -321,7 +321,7 @@ async function handleTrainingMessage({ Tayc, m, chatId, botNumber,prefix, Settin
         switch (code) {
             case 402:
                 // Handle payment required error
-                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `,quoted:m, mentions: contacts.map(c => c + "@s.whatsapp.net") });
+                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `, quoted: m, mentions: contacts.map(c => c + "@s.whatsapp.net") });
                 break;
             default:
                 break;
@@ -384,7 +384,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
             const welcomeData = data.welcome[id];
             const welcomeMessage = welcomeData?.message || 'Welcome {user} to the group! 🎉';
-         
+
             // Send welcome message for each new participant
             for (const participant of participants) {
                 const user = participant.split('@')[0];
@@ -414,7 +414,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
             const goodbyeData = data.goodbye[id];
             const goodbyeMessage = goodbyeData?.message || 'Goodbye {user} 👋';
-    
+
             // Send goodbye message for each leaving participant
             for (const participant of participants) {
                 const user = participant.split('@')[0];
@@ -556,7 +556,6 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
         ? JSON.parse(fs.readFileSync(ALL_CONTACTS_PATH, 'utf-8'))
         : [];
 
-    const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi 🖖. Save me as ${Tayc?.user?.name}*`;
 
     const extractPhoneNumber = (vcard = "") => {
         const match = vcard.match(/TEL.*:(.+)/);
@@ -597,6 +596,7 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
 
         const jid = `${number}@s.whatsapp.net`;
         if (CONTACTS.includes(jid)) continue;
+        const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi ${contact.displayName}, Save me as ${Tayc?.user?.name}*`;
 
         try {
             await sleep(3000)
@@ -866,11 +866,6 @@ async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, delete
 // Handle promote event 
 async function handlePromotionEvent(sock, groupId, participants, author) {
     try {
-       /* console.log('Promotion Event Data:', {
-            groupId,
-            participants,
-            author
-        });*/
 
         // Get usernames for promoted participants
         const promotedUsernames = await Promise.all(participants.map(async jid => {
@@ -894,7 +889,7 @@ async function handlePromotionEvent(sock, groupId, participants, author) {
             `${promotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
             `👑 *Promoted By:* ${promotedBy}\n\n` +
             `📅 *Date:* ${new Date().toLocaleString()}`;
-        
+
         await sock.sendMessage(groupId, {
             text: promotionMessage,
             mentions: mentionList
@@ -908,7 +903,7 @@ async function handlePromotionEvent(sock, groupId, participants, author) {
 // Handle demote event 
 async function handleDemotionEvent(sock, groupId, participants, author) {
     try {
-        if (!groupId || !participants)return
+        if (!groupId || !participants) return
 
         // Add delay to avoid rate limiting
         await sleep(1000);
@@ -938,7 +933,7 @@ async function handleDemotionEvent(sock, groupId, participants, author) {
             `${demotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
             `👑 *Demoted By:* ${demotedBy}\n\n` +
             `📅 *Date:* ${new Date().toLocaleString()}`;
-        
+
         await sock.sendMessage(groupId, {
             text: demotionMessage,
             mentions: mentionList
@@ -1021,7 +1016,7 @@ async function handleStatusUpdate(sock, update) {
         if (!sender || statusBlackList.includes(sender) || viewedStatusCache.has(messageId)) return;
         viewedStatusCache.add(messageId);
         console.log(chalk.yellowBright("[STATUS]"), chalk.blueBright("Status update detected"));
-
+        await sleep(2000)
         // === Mark as vie ===
         try {
             await sock.readMessages([key]);

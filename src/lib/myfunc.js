@@ -307,11 +307,12 @@ exports.parseVcard = parseVcard;
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
     let M = proto.WebMessageInfo
+    const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
         m.chat = m.key.remoteJid
-        m.fromMe = m.key.fromMe
+
         m.isGroup = m.chat.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
             const groupMetadata = await TaycInc.groupMetadata(m.chat)
@@ -320,10 +321,11 @@ exports.smsg = async (TaycInc, m, store) => {
             m.sender = participant?.jid
             m.groupAdmin = groupMetadata.participants.filter(el => el.admin !== null).map(e => e.jid)
             m.isGroupAdmin = m.groupAdmin.includes(m.sender)
-            m.amGroupAdmin = m.groupAdmin.includes(TaycInc.user.id.split(":")[0] + "@s.whatsapp.net")
+            m.amGroupAdmin = m.groupAdmin.includes(botJid)
         } else {
             m.sender = m.key.remoteJid
         }
+        m.fromMe = m.fromMe || m.sender === botJid
     }
 
     if (m.message) {
