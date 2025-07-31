@@ -146,8 +146,6 @@ async function handleMessages(Tayc, messageUpdate) {
             react: { text: emoji, key: m.key }
         });
         const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
-        logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
-
         // === Receive contact ===
         if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) {
             await handleContactDetected(Tayc, m, settings.awc, sendPrivate);
@@ -168,6 +166,7 @@ async function handleMessages(Tayc, messageUpdate) {
             return;
         }
         if (m?.mtype === "protocolMessage") return
+        logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
         // === Build context ===
         const context = {
