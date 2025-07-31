@@ -20,7 +20,7 @@ const addQeu = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const ALL_CONTACTS_PATH = path.join(__dirname, "./src/db/contacts.json")
-
+const ALL_GROUP_DATA_PATH=path.join(__dirname, './src/db/userGroupData.json')
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -381,7 +381,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupDesc = groupMetadata.desc || 'No description available';
 
             // Get welcome message from data
-            const data = JSON.parse(fs.readFileSync('./src/db/userGroupData.json'));
+            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
             const welcomeData = data.welcome[id];
             const welcomeMessage = welcomeData?.message || 'Welcome {user} to the group! 🎉';
          
@@ -411,7 +411,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupName = groupMetadata.subject;
 
             // Get goodbye message from data
-            const data = JSON.parse(fs.readFileSync('./src/db/userGroupData.json'));
+            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
             const goodbyeData = data.goodbye[id];
             const goodbyeMessage = goodbyeData?.message || 'Goodbye {user} 👋';
     
