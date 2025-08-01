@@ -309,6 +309,8 @@ exports.smsg = async (TaycInc, m, store) => {
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
+       // console.log(m.key);
+        
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
         m.chat = m.key.remoteJid
@@ -325,7 +327,7 @@ exports.smsg = async (TaycInc, m, store) => {
         } else {
             m.sender = m.key.remoteJid
         }
-        m.fromMe = m.fromMe || m.sender === botJid
+        m.fromMe = m.key.fromMe || m.sender === botJid
     }
 
     if (m.message) {
