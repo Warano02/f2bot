@@ -1,3 +1,4 @@
+//@ts-check
 const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
@@ -16,7 +17,6 @@ const viewOnceUtils = require('./src/utils/common/viewonce.js');
 const statusDownloader = require('./src/utils/common/status.js');
 const PQueue = require("p-queue").default;
 const queue = new PQueue({ concurrency: 1 });
-queue.start()
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
@@ -97,7 +97,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const message = messages[0];
         if (message.key?.remoteJid?.endsWith("@newsletter")) return;
 
-        const m = await smsg(Tayc, message);
+        const m = await smsg(Tayc, message, messageStore);
         //  console.log(m);
 
         if (!m || !m.body) return;
@@ -201,7 +201,6 @@ async function handleMessages(Tayc, messageUpdate) {
             quotedMessage: m.quoted?.text || null,
             command: '',
             botContact, //  Real number of the bot user 
-            simulatePresence,
             markAsRead,
             FORWARDMESSAGE,
             estimateForwardTime,
@@ -389,7 +388,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupDesc = groupMetadata.desc || 'No description available';
 
             // Get welcome message from data
-            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
+            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH, 'utf-8'));
             const welcomeData = data.welcome[id];
             const welcomeMessage = welcomeData?.message || 'Welcome {user} to the group! 🎉';
 
@@ -419,7 +418,7 @@ async function handleGroupParticipantUpdate(Tayc, update) {
             const groupName = groupMetadata.subject;
 
             // Get goodbye message from data
-            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH));
+            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH, "utf-8"));
             const goodbyeData = data.goodbye[id];
             const goodbyeMessage = goodbyeData?.message || 'Goodbye {user} 👋';
 
@@ -474,6 +473,11 @@ async function storeMessage(message, isUser) {
         } else if (m?.extendedTextMessage?.text) {
             content = m.extendedTextMessage.text;
         }
+        /**
+         * @typedef {"image" | "video" | "audio" |"sticker"| "document"} MimeFolder
+         */
+
+        /** @type {{ type: string, ext: string | (() => string), mimeFolder: MimeFolder }[]} */
 
         const mediaHandlers = [
             { type: 'imageMessage', ext: '.jpg', mimeFolder: 'image' },
@@ -495,7 +499,6 @@ async function storeMessage(message, isUser) {
             if (m?.[handler.type]) {
                 mediaType = handler.type.replace('Message', '');
                 const ext = typeof handler.ext === 'function' ? handler.ext() : handler.ext;
-
                 const stream = await downloadContentFromMessage(m[handler.type], handler.mimeFolder);
                 const chunks = [];
                 for await (const chunk of stream) chunks.push(chunk);
@@ -587,7 +590,7 @@ async function handleContactDetected(Tayc, m, start, botContact) {
         const jid = `${number}@s.whatsapp.net`;
         if (processingAdd.has(jid)) continue
         const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi ${contact.displayName}, Save me as ${Tayc?.user?.name}*`;
-        
+
         processingAdd.set(jid, { number, jid })
         queue.add(async () => {
             try {
@@ -797,7 +800,7 @@ function loadAntibadwordConfig(groupId) {
         if (!fs.existsSync(configPath)) {
             return {};
         }
-        const data = JSON.parse(fs.readFileSync(configPath));
+        const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
         return data.antibadword?.[groupId] || {};
     } catch (error) {
         console.error('❌ Error loading antibadword config:', error.message);
