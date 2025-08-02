@@ -800,7 +800,7 @@ function loadAntibadwordConfig(groupId) {
         if (!fs.existsSync(configPath)) {
             return {};
         }
-        const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+        const data = JSON.parse(fs.readFileSync(configPath,"utf-8"));
         return data.antibadword?.[groupId] || {};
     } catch (error) {
         console.error('❌ Error loading antibadword config:', error.message);
