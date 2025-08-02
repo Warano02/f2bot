@@ -2,7 +2,7 @@ const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } 
 const fs = require('fs');
 const path = require('path');
 
-const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, resetWarningCount, incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
+const { isWelcomeOn, isGoodByeOn, incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -14,9 +14,12 @@ const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } 
 const axios = require('axios');
 const viewOnceUtils = require('./src/utils/common/viewonce.js');
 const statusDownloader = require('./src/utils/common/status.js');
-
+const PQueue = require("p-queue").default;
+const queue = new PQueue({ concurrency: 1 });
+queue.start()
 const messageStore = new Map();
 const addQeu = new Map()
+const processingAdd = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const ALL_CONTACTS_PATH = path.join(__dirname, "./src/db/contacts.json")
@@ -87,7 +90,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const sudoList = GETPRIVACY().sudo || [];
         const taycMode = settings.mode
         const allCommands = loadCommandsGroupedByCategory()
-
+        const botContact = Tayc.user.id.split(":")[0]
         const { messages, type } = messageUpdate;
         if (type !== 'notify' || !messages || messages.length === 0) return;
 
@@ -148,7 +151,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
         // === Receive contact ===
         if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) {
-            await handleContactDetected(Tayc, m, settings.awc, sendPrivate);
+            await handleContactDetected(Tayc, m, settings.awc, botContact);
             return;
         }
 
@@ -197,6 +200,7 @@ async function handleMessages(Tayc, messageUpdate) {
             groupMetadata: m.groupMetadata || {},
             quotedMessage: m.quoted?.text || null,
             command: '',
+            botContact, //  Real number of the bot user 
             simulatePresence,
             markAsRead,
             FORWARDMESSAGE,
@@ -341,7 +345,12 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, 
         simulatePresence("composing", 8000)
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
         if (data?.error) throw new Error(data);
-        reply(data.msg)
+        queue.add(async () => {
+            await sleep(2000)
+            await reply(data.msg)
+
+        })
+
     } catch (e) {
         console.log(e);
         reply(e?.msg || "*🔄️*")
@@ -540,21 +549,14 @@ function getPrompt() {
 
 // When receive contact
 
-async function handleContactDetected(Tayc, m, start, sendPrivate) {
+async function handleContactDetected(Tayc, m, start, botContact) {
     if (start !== "on" || m.fromMe) return;
 
-    console.log(
-        chalk.yellowBright("[CONTACT]"),
+    console.log(chalk.yellowBright("[CONTACT]"),
         chalk.blueBright("New contact(s) detected in"),
         chalk.greenBright(m.chat)
     );
-
     await sleep(3000)
-
-    const CONTACTS = fs.existsSync(ALL_CONTACTS_PATH)
-        ? JSON.parse(fs.readFileSync(ALL_CONTACTS_PATH, 'utf-8'))
-        : [];
-
 
     const extractPhoneNumber = (vcard = "") => {
         const match = vcard.match(/TEL.*:(.+)/);
@@ -578,41 +580,36 @@ async function handleContactDetected(Tayc, m, start, sendPrivate) {
             }))
         );
     }
-
-    if (rawContacts.length > 10) {
-        sendPrivate("❌ Too many contacts detected. Please limit to 10 contacts at a time.");
-        return;
-    }
-
     console.log(chalk.cyan(`🔍 Found ${rawContacts.length} contact(s)`));
-
-    let count = 0;
-    const newlySent = [];
-
     for (const contact of rawContacts) {
         const number = extractPhoneNumber(contact.vcard);
         if (!number) continue;
-
         const jid = `${number}@s.whatsapp.net`;
-        if (CONTACTS.includes(jid)) continue;
+        if (processingAdd.has(jid)) continue
         const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi ${contact.displayName}, Save me as ${Tayc?.user?.name}*`;
+        
+        processingAdd.set(jid, { number, jid })
+        queue.add(async () => {
+            try {
+                console.log("Called")
+                console.log(`🔎 Checking if ${number} exists for ${botContact}`);
+                const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
+                if (data?.contact?.length) return
+                await sleep(1000)
+                await global.currentClient.sendMessage(jid, { text: mess });
+                console.log(chalk.greenBright(`✅ Contact ${contact.displayName} (${number}) sent successfully to ${jid}`));
+                await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
+                return addQeu.set(jid, { number, jid })
+            } catch (e) {
+                console.log(e)
+                return false
+            }
+        })
 
-        try {
-            await sleep(3000)
-            await Tayc.sendMessage(jid, { text: mess });
-            addQeu.set(jid, { number, jid })
-            CONTACTS.push(jid);
-            count++;
-            newlySent.push({ name: contact.displayName, number, jid });
-        } catch { }
     }
 
-    await sleep(2000)
-    if (count > 0) {
-        fs.writeFileSync(ALL_CONTACTS_PATH, JSON.stringify(CONTACTS, null, 2));
-        console.table(newlySent);
-    }
 }
+
 
 // when user reply to message
 async function handleQuotedMessage({ Tayc, m, botNumber }) {
