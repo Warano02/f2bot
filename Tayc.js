@@ -237,16 +237,16 @@ const watcher = chokidar.watch(path.join(__dirname,'.'), {
         try {
           delete require.cache[require.resolve(filePath)];
           require(filePath); // recharge pour forcer l'effet
-          console.log(chalk.green(`✅ Reloaded module: ${path.basename(filePath)}`));
+        //   console.log(chalk.green(`✅ Reloaded module: ${path.basename(filePath)}`));
         } catch (err) {
           console.log(chalk.red(`❌ Reload error in ${filePath}: ${err.message}`));
         }
       })
       .on('add', filePath => {
-        console.log(chalk.blue(`📄 File added: ${filePath}`));
+        // console.log(chalk.blue(`📄 File added: ${filePath}`));
       })
       .on('unlink', filePath => {
-        console.log(chalk.red(`🗑️ File removed: ${filePath}`));
+        // console.log(chalk.red(`🗑️ File removed: ${filePath}`));
       });
   
 
