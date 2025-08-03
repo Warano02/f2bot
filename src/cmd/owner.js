@@ -1,7 +1,7 @@
 const { default: axios } = require("axios");
 const { clearTmpDirectory } = require("../lib/myfunc2");
 const fs = require("fs")
-const path = require("path")
+const path = require("path");
 module.exports = [
     {
         command: ["cleartmp", "cleantmp", "clstmp"],
@@ -63,7 +63,44 @@ module.exports = [
                 reply(`❌ *Error occurred while trying to set premium user.* Details:\n- *Status*: ${e?.response?.status || 500}\n- *Message*: ${e?.response?.data?.msg || e?.message}.\n\n> *If you think this is a mistake, please contact the bot owner via @237692883017.*`, ["237692883017@s.whatsapp.net"]);
             }
         }
+    },
+    {
+        command: ["addsudo", "setsudo"],
+        desc: "allows a user to have full control over your bot",
+        operate: async ({ reply, m, Tayc, Settings, prefix, chatId, botContact, saveNewSetting }) => {
+            const sudo = Settings?.sudo
+            if (m.fromGroup) return reply(`🚨 this command is only avaible in private chat `)
+            if (botContact + "@s.whatsapp.net" === chatId) return reply(`😅 ${Tayc.user.name} you are already a owner of the bot, please type the command directly to the chat of the user that you wanna add as sudo.`)
+            if (sudo.includes(chatId)) return reply(`❌ User @${chatId.split('@')[0]} is already sudo`, [chatId])
+            sudo.push(chatId)
+            Settings.sudo = sudo
+            saveNewSetting({ ...Settings })
+            reply(`@${chatId.split("@")[0]} has been add as sudo ✅. You can type ${prefix}sudolist to view all the sudo of your bot ${Tayc.user.name}`, [chatId])
+        }
+    },
+    {
+        command: ["sudolist", "listsudo"],
+        desc: "List all the user that have total controle your bot",
+        operate: async ({ reply, Tayc, Settings }) => {
+
+            const /**@type Array */ sudo = Settings.sudo
+            if (!sudo.length) return reply("*Only you have a control of your bot for now.*")
+            if (sudo.length === 1) return reply(`Your sudo is @${sudo[0].split('@')[0]}.`, sudo)
+            reply(`Here is list of all your sudo ${Tayc.user.name}:\n\n${sudo.map(e => "- @" + e.split("@")[0]).join("\n")}.\n\n> *©️ ${new Date().getFullYear()} Tayc Bot, Powered by Warano.*`, sudo)
+        }
+    },
+    {
+        command: ["delsudo", "removesudo"],
+        desc: "Remove total control of the bot to add user",
+        operate: async ({ reply, m, Tayc, Settings, prefix, chatId, botContact, saveNewSetting }) => {
+            let /**@type Array */ sudo = Settings?.sudo
+            if (m.fromGroup) return reply(`🚨 this command is only avaible in private chat `)
+            if (botContact + "@s.whatsapp.net" === chatId) return reply(`😅 ${Tayc.user.name} you are already a owner of the bot an you can't remove yourself, please type the command directly to the chat of the user that you wanna remove as sudo.`)
+            if (!sudo.includes(chatId)) return reply(`❌ User @${chatId.split('@')[0]} is not a sudo sudo`, [chatId])
+            sudo = sudo.filter(e => e !== chatId)
+            Settings.sudo = sudo
+            saveNewSetting({ ...Settings })
+            reply(`@${chatId.split("@")[0]} has been remove from your bot sudo successfully ✅`, [chatId])
+        }
     }
-
-
 ]
