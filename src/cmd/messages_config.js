@@ -34,6 +34,16 @@ module.exports = [
                 reply("❌ *An error occurred while updating the prompt. Please try again.*");
             }
         }
+    },
+    {
+        command: ["setaddprefix", "sap"],
+        desc: "Set the prefix that bot can add after the name of contact before save contact",
+        operate: ({ reply, text, settings, Settings, saveNewSetting }) => {
+            if (!text) return reply(`❌*Please provide the text*. Now, when you receive contact(for exemple if the name of user is Warano), i'll save as *Warano ${settings?.addprefix} <country flag>*.`)
+            Settings.settings.addprefix = text
+            saveNewSetting({...Settings})
+            reply(`✅*Auto save contact prefix set to ${text} successfully*`)
+        }
     }
 
 ]

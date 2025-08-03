@@ -14,10 +14,9 @@ const {
     makeCacheableSignalKeyStore
 } = require("@whiskeysockets/baileys")
 require("./src/db/config")
-const chokidar = require('chokidar');
-const path=require("path")
+
 const { handleMessages, handleGroupParticipantUpdate, handleStatusUpdate, ScheduledMessages } = require('./main')
-const { loadCommands } = require('./src/lib/loader')
+const { loadCommands, watchCommands } = require('./src/lib/loader')
 
 const { startAutoClear } = require('./src/lib/myfunc2')
 global.currentClient = null
@@ -26,7 +25,7 @@ const useMobile = process.argv.includes("--mobile")
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = async (text) => {
     return new Promise((resolve) => {
-        console.log(text); 
+        console.log(text);
         rl.question('', resolve);
     });
 };
@@ -203,7 +202,7 @@ async function startTaycInc() {
 }
 
 loadCommands()
-//watchCommands()
+watchCommands()
 startAutoClear()
 
 startTaycInc().catch(error => {
@@ -217,40 +216,11 @@ setInterval(() => {
     }
 }, 30 * 1000);
 
-const IGNORED = [/node_modules/,/\.git/,/session/];
-const WATCHED_EXTENSIONS = ['.js', '.json', '.env'];
 
-const watcher = chokidar.watch(path.join(__dirname,'.'), {
-    ignored: filePath => {
-      return IGNORED.some(rule => rule.test(filePath));
-    },
-    persistent: true,
-    ignoreInitial: true,
-  });
 
-   watcher
-      .on('change', filePath => {
-        if (!WATCHED_EXTENSIONS.includes(path.extname(filePath))) return;
-        console.log(chalk.yellow(`📝 File changed: ${filePath}`));
-  
-        // Exemple : vider le cache ou déclencher une action
-        try {
-          delete require.cache[require.resolve(filePath)];
-          require(filePath); // recharge pour forcer l'effet
-        //   console.log(chalk.green(`✅ Reloaded module: ${path.basename(filePath)}`));
-        } catch (err) {
-          console.log(chalk.red(`❌ Reload error in ${filePath}: ${err.message}`));
-        }
-      })
-      .on('add', filePath => {
-        // console.log(chalk.blue(`📄 File added: ${filePath}`));
-      })
-      .on('unlink', filePath => {
-        // console.log(chalk.red(`🗑️ File removed: ${filePath}`));
-      });
-  
 
-      process.on('uncaughtException', (err) => {
+
+process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err)
 })
 
