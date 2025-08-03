@@ -1,4 +1,3 @@
-//@ts-check
 const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
@@ -15,15 +14,17 @@ const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } 
 const axios = require('axios');
 const viewOnceUtils = require('./src/utils/common/viewonce.js');
 const statusDownloader = require('./src/utils/common/status.js');
+const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
-const queue = new PQueue({ concurrency: 1 });
+const queue = new PQueue({ concurrency: 1,interval:3000 });
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
-const ALL_CONTACTS_PATH = path.join(__dirname, "./src/db/contacts.json")
 const ALL_GROUP_DATA_PATH = path.join(__dirname, './src/db/userGroupData.json')
+const { parsePhoneNumberFromString } = require('libphonenumber-js');
+const flags = require('emoji-flags');
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -287,10 +288,19 @@ async function handleMessages(Tayc, messageUpdate) {
 }
 
 // === When user where bot send message reply ===
-async function handleAddUserResponse({ reply, m, chatId }) {
+async function handleAddUserResponse({ reply, m, chatId, settings }) {
     try {
-        addQeu.delete(chatId)
-        reply("*Done*")
+        console.log(m.fromMe, "User respond",settings)
+        if (m.fromMe || !settings?.asc) return addQeu.delete(chatId)
+        console.log("addings........")
+        queue.add(async () => {
+            const l = addQeu.get(chatId)
+            const kk = parsePhoneNumberFromString(l?.number)
+            const c = { number: l?.number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+            await saveContact(c)
+            addQeu.delete(chatId)
+        })
+        return
     } catch (e) {
         console.log(e);
 
@@ -594,14 +604,13 @@ async function handleContactDetected(Tayc, m, start, botContact) {
         processingAdd.set(jid, { number, jid })
         queue.add(async () => {
             try {
-                console.log("Called")
                 console.log(`🔎 Checking if ${number} exists for ${botContact}`);
                 const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
                 if (data?.contact?.length) return
                 await sleep(1000)
                 await global.currentClient.sendMessage(jid, { text: mess });
-                console.log(chalk.greenBright(`✅ Contact ${contact.displayName} (${number}) sent successfully to ${jid}`));
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
+                processingAdd.delete(jid)
                 return addQeu.set(jid, { number, jid })
             } catch (e) {
                 console.log(e)
@@ -800,7 +809,7 @@ function loadAntibadwordConfig(groupId) {
         if (!fs.existsSync(configPath)) {
             return {};
         }
-        const data = JSON.parse(fs.readFileSync(configPath,"utf-8"));
+        const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
         return data.antibadword?.[groupId] || {};
     } catch (error) {
         console.error('❌ Error loading antibadword config:', error.message);
