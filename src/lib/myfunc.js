@@ -283,7 +283,9 @@ function parseVcard(vcfData) {
         }
 
         for (const raw of tels) {
-            const phone = parsePhoneNumberFromString(raw);
+           
+            const phone = parsePhoneNumberFromString(raw.startsWith("+") ? raw : "+" + raw);
+            
             const country = phone?.country || 'Unknown';
             const code = phone?.countryCallingCode ? `+${phone.countryCallingCode}` : 'Unknown';
             const flag = flags.countryCode(country)?.emoji || '';
@@ -309,8 +311,8 @@ exports.smsg = async (TaycInc, m, store) => {
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
-       // console.log(m.key);
-        
+        // console.log(m.key);
+
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
         m.chat = m.key.remoteJid

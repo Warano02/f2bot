@@ -16,7 +16,7 @@ const viewOnceUtils = require('./src/utils/common/viewonce.js');
 const statusDownloader = require('./src/utils/common/status.js');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
-const queue = new PQueue({ concurrency: 1,interval:3000 });
+const queue = new PQueue({ concurrency: 1, interval: 3000 });
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
@@ -290,12 +290,10 @@ async function handleMessages(Tayc, messageUpdate) {
 // === When user where bot send message reply ===
 async function handleAddUserResponse({ reply, m, chatId, settings }) {
     try {
-        console.log(m.fromMe, "User respond",settings)
         if (m.fromMe || !settings?.asc) return addQeu.delete(chatId)
-        console.log("addings........")
         queue.add(async () => {
             const l = addQeu.get(chatId)
-            const kk = parsePhoneNumberFromString(l?.number)
+            const kk = parsePhoneNumberFromString(l?.number.startsWith("+") ? l?.number : "+" + l?.number)
             const c = { number: l?.number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
             await saveContact(c)
             addQeu.delete(chatId)
@@ -303,7 +301,6 @@ async function handleAddUserResponse({ reply, m, chatId, settings }) {
         return
     } catch (e) {
         console.log(e);
-
     }
 }
 
