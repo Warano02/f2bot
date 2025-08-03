@@ -65,7 +65,7 @@ module.exports = [
                 }
                 reply(`*✅ Chatbot training mode ${text === "on" ? "enabled" : "disabled"} successfully !*`);
             } catch (e) {
-                reply(`❌*Error occurred while trying to control chatbot training mode.* Details:\n- *Status*: ${e?.response?.status || 500}\n- *Message*: ${e?.response?.data?.msg || e?.message}.\n\n*If you think this is a mistake, please contact the bot owner via @237692883017.*`,["237692883017@s.whatsapp.net"]);
+                reply(`❌*Error occurred while trying to control chatbot training mode.* Details:\n- *Status*: ${e?.response?.status || 500}\n- *Message*: ${e?.response?.data?.msg || e?.message}.\n\n*If you think this is a mistake, please contact the bot owner via @237692883017.*`, ["237692883017@s.whatsapp.net"]);
             }
         }
     },
@@ -177,10 +177,36 @@ module.exports = [
             try {
                 if (!["on", "off"].includes(args[0])) return reply(`❌ Invalid argument. Please use "on" or "off".`)
                 settings.awc = args[0]
+                if (args[0] === "off") settings.asc = false
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Autowrite contact status ${args[0] === "on" ? "enabled" : "disabled"} successfully !*`);
             } catch { }
         }
+    },
+    {
+        command: ["autosavecontact", "asc"],
+        desc: "Control the bot auto save contact",
+        operate: async ({ reply, Tayc, m, chatId, text, cmd, Settings, saveNewSetting }) => {
+            if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
+            if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
+            const task = text === "off"
+            if (!task) {
+                try {
+                    const { data } = await axios.get(global.api + "/google/cansave?token=" + global.contact_key)
+                    const response = await axios.get(data?.user?.profil, { responseType: 'arraybuffer' });
+                    const buffer = Buffer.from(response.data, 'binary');
+                    await Tayc.sendMessage(chatId, { image: buffer, caption: `✅ Auto save contact enable successfully to this account by the name *${data?.user?.name}*, for you ${Tayc?.user.name}.\n  ` })
+                } catch (e) {
+                    console.log(e);
+                    
+                    return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
+                }
+            }
+            Settings.settings.asc = text
+            saveNewSetting({...Settings})
+            return task ? reply("✅ *Auto save contact disable successfully*") : ""
+        }
+
     },
     {
         command: ["antidelete"],
