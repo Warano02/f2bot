@@ -99,6 +99,7 @@ module.exports = [
                 react('❌')
                 return reply(`❌ Please provide a question for ChatGPT.`)
             }
+            
             const apis = [
                 `https://vapis.my.id/api/gemini?q=${encodeURIComponent(query)}`,
                 `https://api.siputzx.my.id/api/ai/gemini-pro?content=${encodeURIComponent(query)}`,
@@ -107,6 +108,7 @@ module.exports = [
                 `https://api.giftedtech.my.id/api/ai/geminiai?apikey=gifted&q=${encodeURIComponent(query)}`,
                 `https://api.giftedtech.my.id/api/ai/geminiaipro?apikey=gifted&q=${encodeURIComponent(query)}`
             ];
+
             react("🛜")
             try {
                 for (const api of apis) {

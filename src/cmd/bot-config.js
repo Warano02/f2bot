@@ -198,12 +198,12 @@ module.exports = [
                     await Tayc.sendMessage(chatId, { image: buffer, caption: `✅ Auto save contact enable successfully to this account by the name *${data?.user?.name}*, for you ${Tayc?.user.name}.\n  ` })
                 } catch (e) {
                     console.log(e);
-                    
+
                     return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
                 }
             }
-            Settings.settings.asc = text
-            saveNewSetting({...Settings})
+            Settings.settings.asc = text === "on" ? true : false
+            saveNewSetting({ ...Settings })
             return task ? reply("✅ *Auto save contact disable successfully*") : ""
         }
 
