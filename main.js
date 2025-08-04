@@ -82,7 +82,12 @@ function saveNewSetting(newSettings) {
     fs.writeFileSync(ALL_SETTINGS_PATH, JSON.stringify(newSettings, null, 2));
 }
 
-
+/**
+ * 
+ * @param {(import("@whiskeysockets/baileys").WASocket)} Tayc 
+ * @param {(import("@whiskeysockets/baileys").MessageUserReceiptUpdate)} messageUpdate 
+ * @returns void
+ */
 async function handleMessages(Tayc, messageUpdate) {
     try {
         const settings = GETSETTINGS();

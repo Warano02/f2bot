@@ -1,4 +1,41 @@
 
+/**
+ * @typedef {Array<{ name: string, number: string, country: string, countryCode: string, flag: string }>} Contacts
+ */
+
+/**
+ * @typedef {Object} QuotedMessage 
+ * @property {import("@whiskeysockets/baileys").MessageUpsertType} mtype
+ * @property {string} id
+ * @property {string} chat
+ * @property {boolean} isBaileys
+ * @property {string} sender
+ * @property {string} text
+ * @property {string[]} mentionedJid
+ * @property {boolean} fromMe
+ * @property {Contacts} vcf
+ * */
+
+/**
+ * @typedef {Object} SerializedMessage
+ * @property {string} id - Id of the message
+ * @property {string} chat - JID of the chat 
+ * @property {boolean} isBaileys 
+ * @property {boolean} isGroup
+ * @property {import("@whiskeysockets/baileys").groupMetadata} groupMetadata
+ * @property {string} sender 
+ * @property {string[]} groupAdmin
+ * @property {boolean} isGroupAdmin
+ * @property {boolean} amGroupA/dmin
+ * @property {boolean} fromMe
+ * @property {import("@whiskeysockets/baileys").MessageUpsertType} mtype
+ * @property {string} body
+ * @property {Contacts} contacts
+ * @property {string[]} mentionedJid
+ * @property {QuotedMessage} quoted
+ */
+
+
 const {
     proto,
     delay,
@@ -252,7 +289,7 @@ exports.getGroupAdmins = (participants) => {
 /**
  * Parse un fichier .vcf et ajoute nom, numéro, pays, flag
  * @param {Buffer|string} vcfData 
- * @returns {Array<{ name: string, number: string, country: string, countryCode: string, flag: string }>}
+ * @returns {Contacts}
  */
 function parseVcard(vcfData) {
     let text = Buffer.isBuffer(vcfData) ? vcfData.toString() : vcfData;
@@ -302,9 +339,10 @@ exports.parseVcard = parseVcard;
 
 /**
  * Serialize Message
- * @param {WAConnection} TaycInc 
- * @param {Object} m 
- * @param {store} store 
+ * @param {import("@whiskeysockets/baileys").WASocket} TaycInc
+ * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate} m
+ * @param {import('../db/types.d.js').Store} store
+ * @returns {SerializedMessage} 
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
@@ -312,7 +350,6 @@ exports.smsg = async (TaycInc, m, store) => {
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
         // console.log(m.key);
-
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
         m.chat = m.key.remoteJid
