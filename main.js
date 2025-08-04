@@ -22,7 +22,6 @@ const addQeu = new Map()
 const processingAdd = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
-const ALL_GROUP_DATA_PATH = path.join(__dirname, './src/db/userGroupData.json')
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
 // Making sure tmp exist 
@@ -369,91 +368,6 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, 
 
 }
 
-async function handleGroupParticipantUpdate(Tayc, update) {
-    try {
-        const { id, participants, action, author } = update;
-
-        // Check if it's a group
-        if (!id.endsWith('@g.us')) return;
-
-        // Handle promotion events
-        if (action === 'promote') {
-            await handlePromotionEvent(Tayc, id, participants, author);
-            return;
-        }
-
-        // Handle demotion events
-        if (action === 'demote') {
-            await handleDemotionEvent(Tayc, id, participants, author);
-            return;
-        }
-
-        // Handle join events
-        if (action === 'add') {
-            // Check if welcome is enabled for this group
-            const isWelcomeEnabled = await isWelcomeOn(id);
-            if (!isWelcomeEnabled) return;
-
-            // Get group metadata
-            const groupMetadata = await Tayc.groupMetadata(id);
-            const groupName = groupMetadata.subject;
-            const groupDesc = groupMetadata.desc || 'No description available';
-
-            // Get welcome message from data
-            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH, 'utf-8'));
-            const welcomeData = data.welcome[id];
-            const welcomeMessage = welcomeData?.message || 'Welcome {user} to the group! 🎉';
-
-            // Send welcome message for each new participant
-            for (const participant of participants) {
-                const user = participant.split('@')[0];
-                const formattedMessage = welcomeMessage
-                    .replace('{user}', `@${user}`)
-                    .replace('{group}', groupName)
-                    .replace('{description}', groupDesc);
-
-                await Tayc.sendMessage(id, {
-                    text: formattedMessage,
-                    mentions: [participant],
-                });
-            }
-        }
-
-        // Handle leave events
-        if (action === 'remove') {
-            // Check if goodbye is enabled for this group
-            const isGoodbyeEnabled = await isGoodByeOn(id);
-            if (!isGoodbyeEnabled) return;
-
-            // Get group metadata
-            const groupMetadata = await Tayc.groupMetadata(id);
-            const groupName = groupMetadata.subject;
-
-            // Get goodbye message from data
-            const data = JSON.parse(fs.readFileSync(ALL_GROUP_DATA_PATH, "utf-8"));
-            const goodbyeData = data.goodbye[id];
-            const goodbyeMessage = goodbyeData?.message || 'Goodbye {user} 👋';
-
-            // Send goodbye message for each leaving participant
-            for (const participant of participants) {
-                const user = participant.split('@')[0];
-                const formattedMessage = goodbyeMessage
-                    .replace('{user}', `@${user}`)
-                    .replace('{group}', groupName);
-
-                await Tayc.sendMessage(id, {
-                    text: formattedMessage,
-                    mentions: [participant],
-                });
-            }
-        }
-    } catch (error) {
-        console.error('Error in handleGroupParticipantUpdate:', error);
-    }
-}
-
-
-
 // Créer un dossier daté et retourner un chemin
 function getMediaPath(messageId, ext) {
     const day = new Date().toISOString().slice(0, 10);
@@ -650,7 +564,6 @@ async function handleMessageRevocation(sock, m, botNumber) {
         const messageId = m.message.protocolMessage.key.id;
         const deletedBy = m.participant || m.key.participant || m.key.remoteJid;
         const resendJid = config.antidelete === "private" ? botNumber : m.chat;
-        console.log(resendJid, deletedBy);
 
         if (deletedBy.includes(botNumber)) return;
 
@@ -873,88 +786,8 @@ async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, delete
     }
 }
 
-// Handle promote event 
-async function handlePromotionEvent(sock, groupId, participants, author) {
-    try {
-
-        // Get usernames for promoted participants
-        const promotedUsernames = await Promise.all(participants.map(async jid => {
-            return `@${jid.split('@')[0]} `;
-        }));
-
-        let promotedBy;
-        let mentionList = [...participants];
-
-        if (author && author.length > 0) {
-            // Ensure author has the correct format
-            const authorJid = author;
-            promotedBy = `@${authorJid.split('@')[0]}`;
-            mentionList.push(authorJid);
-        } else {
-            promotedBy = 'System';
-        }
-
-        const promotionMessage = `*『 GROUP PROMOTION 』*\n\n` +
-            `👥 *Promoted User${participants.length > 1 ? 's' : ''}:*\n` +
-            `${promotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
-            `👑 *Promoted By:* ${promotedBy}\n\n` +
-            `📅 *Date:* ${new Date().toLocaleString()}`;
-
-        await sock.sendMessage(groupId, {
-            text: promotionMessage,
-            mentions: mentionList
-        });
-    } catch (error) {
-        console.error('Error handling promotion event:', error);
-    }
-}
 
 
-// Handle demote event 
-async function handleDemotionEvent(sock, groupId, participants, author) {
-    try {
-        if (!groupId || !participants) return
-
-        // Add delay to avoid rate limiting
-        await sleep(1000);
-
-        // Get usernames for demoted participants
-        const demotedUsernames = await Promise.all(participants.map(async jid => {
-            return `@${jid.split('@')[0]}`;
-        }));
-
-        let demotedBy;
-        let mentionList = [...participants];
-
-        if (author && author.length > 0) {
-            // Ensure author has the correct format
-            const authorJid = author;
-            demotedBy = `@${authorJid.split('@')[0]}`;
-            mentionList.push(authorJid);
-        } else {
-            demotedBy = 'System';
-        }
-
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const demotionMessage = `*『 GROUP DEMOTION 』*\n\n` +
-            `👤 *Demoted User${participants.length > 1 ? 's' : ''}:*\n` +
-            `${demotedUsernames.map(name => `• ${name}`).join('\n')}\n\n` +
-            `👑 *Demoted By:* ${demotedBy}\n\n` +
-            `📅 *Date:* ${new Date().toLocaleString()}`;
-
-        await sock.sendMessage(groupId, {
-            text: demotionMessage,
-            mentions: mentionList
-        });
-    } catch (error) {
-        console.error('Error handling demotion event:', error);
-        if (error.data === 429) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-    }
-}
 
 // antilink
 async function Antilink({ Tayc, body, sender, reply, deleteM, isBotUser, chatId, amGroupAdmin, isGroupAdmin }) {
@@ -1136,7 +969,6 @@ async function ScheduledMessages(Tayc) {
 module.exports = {
     getPrompt,
     handleMessages,
-    handleGroupParticipantUpdate,
     handleStatusUpdate,
     ScheduledMessages,
     saveNewSetting
