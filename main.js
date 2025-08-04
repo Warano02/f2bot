@@ -24,6 +24,7 @@ const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
+const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -536,21 +537,6 @@ async function handleContactDetected(Tayc, m, start, botContact) {
 
     }
 
-}
-
-
-// when user reply to message
-async function handleQuotedMessage({ Tayc, m, botNumber }) {
-    if (!m.quoted || !m.fromMe) return
-    if (m.quoted.viewOnce) {
-        const i1 = `*viewOnce send by @${m.quoted.sender.split("@")[0]} `
-        return viewOnceUtils({ Tayc, message: m, chatId: botNumber, e00e: i1, e01e: [m.quoted.sender] })
-    }
-
-    if (m.quoted.chat === 'status@broadcast') {
-        return statusDownloader({ Tayc, m, chatId: botNumber })
-    }
-    return true
 }
 
 // antidelete message
