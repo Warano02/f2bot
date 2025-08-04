@@ -1,40 +1,4 @@
 
-/**
- * @typedef {Array<{ name: string, number: string, country: string, countryCode: string, flag: string }>} Contacts
- */
-
-/**
- * @typedef {Object} QuotedMessage 
- * @property {import("@whiskeysockets/baileys").MessageUpsertType} mtype
- * @property {string} id
- * @property {string} chat
- * @property {boolean} isBaileys
- * @property {string} sender
- * @property {string} text
- * @property {string[]} mentionedJid
- * @property {boolean} fromMe
- * @property {Contacts} vcf
- * */
-
-/**
- * @typedef {Object} SerializedMessage
- * @property {string} id - Id of the message
- * @property {string} chat - JID of the chat 
- * @property {boolean} isBaileys 
- * @property {boolean} isGroup
- * @property {import("@whiskeysockets/baileys").groupMetadata} groupMetadata
- * @property {string} sender 
- * @property {string[]} groupAdmin
- * @property {boolean} isGroupAdmin
- * @property {boolean} amGroupA/dmin
- * @property {boolean} fromMe
- * @property {import("@whiskeysockets/baileys").MessageUpsertType} mtype
- * @property {string} body
- * @property {Contacts} contacts
- * @property {string[]} mentionedJid
- * @property {QuotedMessage} quoted
- */
-
 
 const {
     proto,
@@ -342,7 +306,7 @@ exports.parseVcard = parseVcard;
  * @param {import("@whiskeysockets/baileys").WASocket} TaycInc
  * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate} m
  * @param {import('../db/types.d.js').Store} store
- * @returns {SerializedMessage} 
+ * @returns {import("../db/types.d.ts").SerializedMessage} 
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
