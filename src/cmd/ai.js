@@ -50,27 +50,6 @@ module.exports = [
     },
     {
         command: ['llama'],
-        desc: "Ask question to llama Ai",
-        operate: async ({ m, reply, text }) => {
-            if (!text) return reply("*❌Please provide the question*");
-
-            try {
-                let response = await fetch(`https://bk9.fun/ai/llama?q=${encodeURIComponent(text)}`);
-                let data = await response.json();
-
-                if (!data.BK9) {
-                    reply(global.mess.error);
-                } else {
-                    reply(data.BK9);
-                }
-            } catch (error) {
-                console.error('Error fetching response from Llama API:', error);
-                reply(global.mess.error);
-            }
-        }
-    },
-    {
-        command: ['llama'],
         desc: "Ask question to llama ia",
         operate: async ({ m, reply, text }) => {
             if (!text) return reply("Please provide question");

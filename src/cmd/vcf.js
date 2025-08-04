@@ -41,33 +41,18 @@ module.exports = [
         }
     },
     {
-        command: ["previexcontacts", "pvc"],
+        command: ["previewcontacts", "pvc"],
         desc: 'Send a preview of all contact in the vcf',
-        operate: async ({ Tayc, m, cmd ,reply}) => {
+        operate: async ({ m, cmd, reply }) => {
             if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             let tab = vcfUtils.exportToJSON()
-            const v = (e) => {
-                return ` 'BEGIN:VCARD\n'd
-            + 'VERSION:3.0\n'
-            + 'FN:${e?.name}\n' 
-            + 'ORG:Ashoka Uni;\n' 
-            + 'TEL;type=CELL;type=VOICE;waid=${e?.number + ':' + e?.number}\n' 
-            + 'END:VCARD'`
-            }
-            Tayc.sendMessage(m.chat, {
-                text: `Here is all the ${tab.length} contact(s)`,
-                cards: tab.map(el => {
-                    return {
-                        contacts: {
-                            displayName: el?.name,
-                            contacts: [{ vcard:v(el) }]
-                        }
-                    }
-                }),
-                footer: '> Take All You Can'
-            })
+            const list = tab.map((el, i) => i + 1 + ". @" + el.number).join("\n")
+            const tags = tab.map(e => e.jid)
+            console.log(tags);
+            
+            reply(`Here is all the ${tab.length} contact(s):\n${list}\n\n> Take All You Can`, tags)
         }
     }
 ];

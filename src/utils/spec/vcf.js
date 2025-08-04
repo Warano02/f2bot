@@ -41,8 +41,12 @@ class VCFUtils {
         return buffer;
     }
 
+    /**
+     * Exporte les contacts sous forme de tableau JSON.
+     * @returns {Array<{name: string, number: string,jid: string}>}
+     */
     exportToJSON() {
-        return this.contacts.map(({ name, number }) => ({ name, number }));
+        return this.contacts.map(({ name, number }) => ({ name, number, jid: number + "@s.whatsapp.net" }));
     }
 }
 
