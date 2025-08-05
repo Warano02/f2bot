@@ -1,16 +1,9 @@
 const fsp = require('fs/promises')
 const { spawn } = require('child_process');
 const axios = require('axios');
+const { sleep } = require('../lib/myfunc');
 
-function restartBot() {
-    console.clear();
-    console.log("♻️  Redémarrage de index.js...\n");
-    spawn(process.argv[0], [__filename], {
-        stdio: 'inherit',
-        shell: true
-    });
-    process.exit();
-}
+
 module.exports = [
     {
         command: ["autorecordtype", "art"],
@@ -28,8 +21,9 @@ module.exports = [
         command: ["update", "restart"],
         desc: "Update bot",
         operate: async ({ reply }) => {
-            reply("*Restarting....*")
-            restartBot()
+            reply(`*Restarting...*`);
+            await sleep(3000);
+            process.exit(0);
         }
     },
     {

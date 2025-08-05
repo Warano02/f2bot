@@ -2,6 +2,7 @@ const { default: axios } = require("axios");
 const { clearTmpDirectory } = require("../lib/myfunc2");
 const fs = require("fs")
 const path = require("path");
+const { isUrl } = require("../lib/myfunc");
 module.exports = [
     {
         command: ["cleartmp", "cleantmp", "clstmp"],
@@ -15,7 +16,7 @@ module.exports = [
     {
         command: ["contactlist", "ctl"],
         desc: "Show all the contact that bot have send add message",
-        operate: async ({ reply,react, Tayc, botContact }) => {
+        operate: async ({ reply, react, Tayc, botContact }) => {
             try {
                 react("⌛")
                 const { data } = await axios.get(global.api + "/api/contacts_list?user=" + botContact)
@@ -109,5 +110,52 @@ module.exports = [
             saveNewSetting({ ...Settings })
             reply(`@${chatId.split("@")[0]} has been remove from your bot sudo successfully ✅`, [chatId])
         }
-    }
+    },
+    {
+        command: ['readreceipts'],
+        desc: "shortcut to update your policy marking messages as read",
+        operate: async ({ Tayc, reply, prefix, command, text, args }) => {
+            if (!text) return reply(`Options: all/none\nExample: ${prefix + command} all`);
+            if (!["all", "none"].includes(args[0])) return reply("Invalid option");
+            await Tayc.updateReadReceiptsPrivacy(text);
+            await reply(`Done`);
+        }
+    },
+    {
+        command: ['ppprivacy'],
+        desc: "shortcut to update your policy of viewing profile picture",
+        operate: async ({ Tayc, reply, mess, prefix, command, text, args }) => {
+            if (!text) return reply(`*Options*: all/contacts/contact_blacklist/none\n> *Example*: ${prefix + command} all`);
+            const validOptions = ["all", "contacts", "contact_blacklist", "none"];
+            if (!validOptions.includes(args[0])) return reply("Invalid option");
+            await Tayc.updateProfilePicturePrivacy(text);
+            await reply(mess.done);
+        }
+    },
+    {
+        command: ['leave', 'leavegc'],
+        desc: "shortcut to leave an group",
+        operate: async ({ Tayc, m, reply, mess }) => {
+            if (!m.isGroup) return reply(mess.group);
+            reply("*Goodbye, it was nice being here!*");
+            await sleep(3000);
+            await Tayc.groupLeave(m.chat);
+        }
+    },
+    {
+        command: ['join'],
+        desc:"Fast method to join a group",
+        operate: async ({ Tayc, m, reply, isCreator, mess, args, text }) => {
+            if (!isCreator) return reply(mess.owner);
+            if (!text) return reply("Enter group link");
+            if (!isUrl(args[0]) && !args[0].includes("whatsapp.com")) return reply("Invalid link");
+            try {
+                const link = args[0].split("https://chat.whatsapp.com/")[1];
+                await Tayc.groupAcceptInvite(link);
+                reply("Joined successfully");
+            } catch {
+                reply("Failed to join group");
+            }
+        }
+    },
 ]

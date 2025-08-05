@@ -16,5 +16,7 @@ global.wwe2 = "https://www.thesportsdb.com/api/v1/json/3/searchevents.php?e=wres
 global.falcon = "https://flowfalcon.dpdns.org";
 
 global.mess = {
-    error: "❌ *Error while executing the command*. Please try again!"
+    error: "❌ *Error while executing the command*. Please try again!",
+    done: `✅ mission accomplished successfully ${global.currentClient.user.name}`,
+    group:"❌ *This command is avaible only in the group*"
 }
