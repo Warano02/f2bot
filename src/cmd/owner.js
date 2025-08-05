@@ -21,7 +21,7 @@ module.exports = [
                 const { data } = await axios.get(global.api + "/api/contacts_list?user=" + botContact)
                 const tags = data?.contacts.map(e => e.phone + "@s.whatsapp.net")
                 const lo = data?.contacts?.map((e, i) => i + 1 + ". @" + e?.phone).join("\n")
-                reply(`*Here is all the contact that Tayc have send add message :*\n${lo}`, tags)
+                reply(`*Here is all the contact that Tayc have send add message :*\n${lo}\n\n> Take All You Can`, tags)
                 react("")
             } catch (e) {
                 if (e?.response?.status === 404) reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
