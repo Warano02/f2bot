@@ -7,10 +7,10 @@ yarn.lock
 tmp/
 temp/
 .upm/
-session/
+#session/
 
 # Session files
-Session/
+#Session/
 test/
 
 # Environment variables
@@ -37,3 +37,4 @@ test.json
 prompt.txt
 command.js
 deploy.js
+
