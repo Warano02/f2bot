@@ -7,7 +7,7 @@
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "on",
+    "awc": "off",
     "addprefix": "tayc",
     "asc": false,
     "mode": "private",

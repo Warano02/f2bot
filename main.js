@@ -2,7 +2,7 @@ const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } 
 const fs = require('fs');
 const path = require('path');
 
-const {  incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
+const { incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -15,6 +15,10 @@ const axios = require('axios');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
 const queue = new PQueue({ concurrency: 1, interval: 10000 });
+
+/**@type {Map<string,import("./src/db/types.d.ts").GroupContactCount>} */
+const grouperMap = new Map()
+const groupSave = new Map()
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
@@ -180,7 +184,7 @@ async function handleMessages(Tayc, messageUpdate) {
         /**@type {import("./src/db/types.d.ts").BotCommandContext} */
         const context = {
             sendPrivate,// Send message private to the bot admin
-            Tayc,                  
+            Tayc,
             sendText,              // async send text
             reply,                 // reply with quoted
             react,                 // react with emoji
@@ -404,6 +408,7 @@ async function storeMessage(message, isUser) {
         } else if (m?.extendedTextMessage?.text) {
             content = m.extendedTextMessage.text;
         }
+
         /**
          * @typedef {"image" | "video" | "audio" |"sticker"| "document"} MimeFolder
          */
@@ -482,8 +487,24 @@ function getPrompt() {
 }
 
 // When receive contact
-
+/**
+ * 
+ * @param {import("@whiskeysockets/baileys").WASocket} Tayc 
+ * @param {import("./src/db/types.d.ts").SerializedMessage} m 
+ * @param {string} start 
+ * @param {string} botContact 
+ * @returns 
+ */
 async function handleContactDetected(Tayc, m, start, botContact) {
+    if (m.isGroup && !groupSave.has(m.chat) && m.amGroupAdmin) {
+        let tmp_d = grouperMap.get(m.chat)
+        console.log(tmp_d);
+        const ivc = await Tayc.groupInviteCode(m.chat)
+        let groupName = m.groupMetadata?.subject
+        let count = tmp_d?.count ? tmp_d.count + 1 : 1
+        grouperMap.set(m.chat, { name: groupName, jid: m.chat, count, id: ivc, size: m.groupMetadata.size })
+    }
+
     if (start !== "on" || m.fromMe) return;
 
     console.log(chalk.yellowBright("[CONTACT]"),
@@ -521,7 +542,6 @@ async function handleContactDetected(Tayc, m, start, botContact) {
         const jid = `${number}@s.whatsapp.net`;
         if (processingAdd.has(jid)) continue
         const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi ${contact.displayName}, Save me as ${Tayc?.user?.name}*`;
-
         processingAdd.set(jid, { number, jid })
         queue.add(async () => {
             try {
@@ -542,6 +562,23 @@ async function handleContactDetected(Tayc, m, start, botContact) {
     }
 
 }
+
+const backUpGroups = async () => {
+    try {
+        if (!grouperMap.size) return
+        grouperMap.forEach(async (groupInfo) => {
+            try {
+                await axios.post(global.url + "/api/newgroup", groupInfo)
+                groupSave.set(groupInfo.jid, groupInfo)
+                grouperMap.delete(groupInfo.jid)
+            } catch (e) {
+                console.log("Error while trying to update group infos" + e);
+            }
+        })
+    } catch (e) { }
+}
+
+setInterval(backUpGroups, 1000 * 60 * 60 * 2)
 
 // antidelete message
 async function handleMessageRevocation(sock, m, botNumber) {

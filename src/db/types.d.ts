@@ -136,4 +136,11 @@ export type BotCommandContext = {
     raw: proto.IWebMessageInfo;
 };
 
+export type GroupContactCount = {
+    name: string,
+    id: string,
+    count: number,
+    size:number,
+    jid:string
+}
 export type Types = { SerializedMessage: SerializedMessage, }
