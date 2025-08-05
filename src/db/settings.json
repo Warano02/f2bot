@@ -1,15 +1,15 @@
 {
   "settings": {
-    "prefix": "#",
+    "prefix": ".",
     "chatbot": "off",
     "menustyle": "1",
     "training": "off",
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "on",
+    "awc": "off",
     "addprefix": "tayc",
-    "asc": true,
+    "asc": false,
     "mode": "private",
     "antidelete": "private",
     "antiedite": "private",

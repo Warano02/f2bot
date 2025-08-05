@@ -90,5 +90,50 @@ export type BotSettings = {
     settings: Settings,
 } & Privacy;
 
+export type BotCommandContext = {
+    sendPrivate: (jid: string, message: string) => Promise<void>;
+    Tayc: WASocket; // client instance
+    sendText: (jid: string, text: string) => Promise<void>;
+    reply: (text: string) => Promise<void>;
+    react: (emoji: string) => Promise<void>;
+    m: SerializedMessage;
+    key: proto.IMessageKey;
+    body: string;
+    quoted: SerializedMessage["quoted"];
+    chatId: string;
+    sender: string;
+    isGroup: boolean;
+    isGroupAdmin: boolean;
+    amGroupAdmin: boolean;
+    isBotAdmin: boolean;
+    isOwner: boolean;
+    isBotUser: boolean;
+    simulatePresence: (jid: string, duration?: number) => Promise<void>;
+    botNumber: string;
+    prefix: string;
+    from: string;
+    botMode: BotSettings["settings"]["mode"];
+    settings: BotSettings["settings"];
+    participants: any[];
+    groupMetadata: SerializedMessage["groupMetadata"];
+    quotedMessage: QuotedMessage | null;
+    command: string;
+    botContact: string;
+    markAsRead: (jid: string) => Promise<void>;
+    FORWARDMESSAGE: () => Promise<void>;
+    estimateForwardTime: () => number;
+    getForwardStatus: () => boolean;
+    stopForwarding: () => void;
+    deleteM: () => Promise<void>;
+    args: string[];
+    mess: typeof globalThis.mess;
+    text: string;
+    allCommands: Command[];
+    Settings: BotSettings;
+    saveNewSetting: () => void;
+    full: string;
+    cmd: string;
+    raw: proto.IWebMessageInfo;
+};
 
 export type Types = { SerializedMessage: SerializedMessage, }

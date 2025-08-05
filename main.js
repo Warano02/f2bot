@@ -113,7 +113,7 @@ async function handleMessages(Tayc, messageUpdate) {
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id;
         const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender);
-        
+
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
                 await sleep(2000)
@@ -179,9 +179,10 @@ async function handleMessages(Tayc, messageUpdate) {
         logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
         // === Build context ===
+        /**@type {import("./src/db/types.d.ts").BotCommandContext} */
         const context = {
             sendPrivate,// Send message private to the bot admin
-            Tayc,                  // client instance
+            Tayc,                  
             sendText,              // async send text
             reply,                 // reply with quoted
             react,                 // react with emoji
@@ -202,7 +203,7 @@ async function handleMessages(Tayc, messageUpdate) {
             prefix,
             from: chatId,          // alias
             botMode: settings.mode,
-            settings,              
+            settings,
             participants: m.participants || [],
             groupMetadata: m.groupMetadata || {},
             quotedMessage: m.quoted?.text || null,
@@ -219,10 +220,10 @@ async function handleMessages(Tayc, messageUpdate) {
             text: "",
             allCommands,
             Settings: LOADSETTINGS(),
-            saveNewSetting, 
+            saveNewSetting,
             full: '',
             cmd: "",
-            raw: message        
+            raw: message
         };
 
 
@@ -344,7 +345,11 @@ async function handleTrainingMessage({ Tayc, m, chatId, botNumber, prefix, Setti
     }
 }
 
-// Chatbot
+/**
+ * Chatbot
+ * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
+ * @returns void
+ */
 async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, reply, botNumber }) {
     if (m.fromMe || !body) return
     const prompt = getPrompt()
