@@ -14,12 +14,14 @@ const disabledAutosave = () => {
 
 const saveContact = async (contact) => {
     try {
-         await axios.post(global.api + '/google/contact/add?token=' + global.contact_key, contact)
+        await axios.post(global.api + '/google/contact/add?token=' + global.contact_key, contact)
         return
     } catch (e) {
         console.log(e);
-        global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${e?.response?.data?.msg|| 'N/A'} ` })
-        return disabledAutosave()
+        const errMsg = e?.response?.data?.msg || "Not set"
+        const code = e?.response.status || 500
+        global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${errMsg} ` })
+        return [400, 409, 404].includes(code) ? disabledAutosave() : ""
     }
 }
 

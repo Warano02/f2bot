@@ -2,7 +2,7 @@ const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } 
 const fs = require('fs');
 const path = require('path');
 
-const { isWelcomeOn, isGoodByeOn, incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
+const {  incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -12,11 +12,9 @@ const { getCommands } = require('./src/lib/loader.js');
 const chalk = require('chalk');
 const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } = require('./src/lib/forwarder.js');
 const axios = require('axios');
-const viewOnceUtils = require('./src/utils/common/viewonce.js');
-const statusDownloader = require('./src/utils/common/status.js');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
-const queue = new PQueue({ concurrency: 1, interval: 3000 });
+const queue = new PQueue({ concurrency: 1, interval: 10000 });
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()

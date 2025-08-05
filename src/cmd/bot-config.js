@@ -11,7 +11,6 @@ function restartBot() {
     });
     process.exit();
 }
-
 module.exports = [
     {
         command: ["autorecordtype", "art"],
@@ -50,11 +49,12 @@ module.exports = [
     {
         command: ["training", "training_chatbot", "tnc"],
         desc: "Enable or disable the chatbot training mode",
-        operate: async ({ reply, text, Tayc, Settings, saveNewSetting, settings, botNumber, }) => {
+        operate: async ({ reply, text, react, Settings, saveNewSetting, settings, botNumber, }) => {
             try {
                 if (!text || !["on", "off"].includes(text)) return reply(`❌ Invalid argument. Please use "on" or "off".`)
                 if (text === "on") {
                     if (settings.training === "on") return reply("❌ *Training mode is already enabled.*");
+                    react("⌛")
                     const { data } = await axios.get(global.api + "/api/check_training", { headers: { "user": botNumber.split("@")[0].split(":")[0] } });
                     if (data?.error) throw new Error(data);
                     settings.training = "on";
@@ -186,12 +186,14 @@ module.exports = [
     {
         command: ["autosavecontact", "asc"],
         desc: "Control the bot auto save contact",
-        operate: async ({ reply, Tayc, m, chatId, text, cmd, Settings, saveNewSetting }) => {
+        operate: async ({ reply, Tayc, react, m, chatId, text, cmd, Settings, saveNewSetting }) => {
             if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
             if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
             const task = text === "off"
             if (!task) {
                 try {
+                    react("⌛")
+
                     const { data } = await axios.get(global.api + "/google/cansave?token=" + global.contact_key)
                     const response = await axios.get(data?.user?.profil, { responseType: 'arraybuffer' });
                     const buffer = Buffer.from(response.data, 'binary');
