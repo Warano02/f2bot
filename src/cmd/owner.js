@@ -15,10 +15,17 @@ module.exports = [
     {
         command: ["contactlist", "ctl"],
         desc: "Show all the contact that bot have send add message",
-        operate: async ({ reply, Tayc }) => {
-            const list = JSON.parse(fs.readFileSync(path.join(__dirname, "../db/contacts.json"), "utf-8"))
-            if (!list.length) return reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
-            reply(`*Here is all the contact that Tayc have send add message :*\n${list.map((e, i) => i + 1 + ". @" + e.split("@")[0]).join("\n")}`, list)
+        operate: async ({ reply,react, Tayc, botContact }) => {
+            try {
+                react("⌛")
+                const { data } = await axios.get(global.api + "/api/contacts_list?user=" + botContact)
+                const tags = data?.contacts.map(e => e.phone + "@s.whatsapp.net")
+                const lo = data?.contacts?.map((e, i) => i + 1 + ". @" + e?.phone).join("\n")
+                reply(`*Here is all the contact that Tayc have send add message :*\n${lo}`, tags)
+                react("")
+            } catch (e) {
+                if (e?.response?.status === 404) reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
+            }
         }
     },
     {
