@@ -17,6 +17,6 @@ global.falcon = "https://flowfalcon.dpdns.org";
 
 global.mess = {
     error: "❌ *Error while executing the command*. Please try again!",
-    done: `✅ mission accomplished successfully ${global.currentClient.user.name}`,
+    done: `✅ mission accomplished successfully boss!`,
     group:"❌ *This command is avaible only in the group*"
 }
