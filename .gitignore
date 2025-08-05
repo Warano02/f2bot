@@ -9,8 +9,8 @@ temp/
 .upm/
 #session/
 
-# Session files
-#Session/
+ Session files
+Session/
 test/
 
 # Environment variables
