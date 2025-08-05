@@ -3,7 +3,10 @@ const path = require('path')
 const chalk = require('chalk')
 
 const COMMANDS = []
-
+/**
+ * 
+ * @returns {import("../db/types.d.ts").Commands[]}
+ */
 function getCommands() {
   return COMMANDS
 }

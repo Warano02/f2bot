@@ -455,6 +455,11 @@ exports.reSize = (buffer, ukur1, ukur2) => {
     })
 }
 
+
+/**
+ * 
+ * @returns {import("../db/types.d.ts").Settings}
+ */
 exports.GETSETTINGS = () => {
     try {
         const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
@@ -464,6 +469,10 @@ exports.GETSETTINGS = () => {
     }
 }
 
+/**
+ * 
+ * @returns {import("../db/types.d.ts").BotSettings}
+ */
 exports.LOADSETTINGS = () => {
     try {
         const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
@@ -473,6 +482,10 @@ exports.LOADSETTINGS = () => {
     }
 }
 
+/**
+ * 
+ * @returns {import("../db/types.d.ts").Privacy}
+ */
 exports.GETPRIVACY = () => {
     try {
         const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))

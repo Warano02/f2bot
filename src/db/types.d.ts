@@ -14,7 +14,7 @@ export type Command = {
     __source?: string;
 };
 
-
+export type Commands = Command[]
 export type Contact = {
     name: string;
     number: string;
@@ -22,6 +22,7 @@ export type Contact = {
     countryCode: string;
     flag: string;
 };
+
 
 export type Contacts = Contact[];
 
@@ -54,5 +55,40 @@ export type SerializedMessage = {
     mentionedJid: string[];
     quoted: QuotedMessage;
 };
+export type Settings = {
+    prefix: string;
+    chatbot: "on" | "off";
+    menustyle: "1" | "2" | string;
+    training: "on" | "off";
+    autorecordtype: "on" | "off";
+    autoread: "on" | "off";
+    lang: "en" | "fr" | string;
+    awc: "on" | "off";
+    addprefix: string;
+    asc: boolean;
+    mode: "private" | "public";
+    antidelete: "private" | "off" | string;
+    antiedite: "private" | "off" | string;
+    autoviewstatus: boolean;
+    autoreactstatus: boolean;
+    autoreplystatus: boolean;
+    statusemojis: string;
+};
+
+export type Privacy = {
+    mess: {
+        addNewContact: string;
+    };
+    statusblacklist: string[];
+    sudo: string[]; // JIDs des admins
+    badWords: string[];
+    lastforwarding: string; // ISO Date
+    scheduled: any[];
+}
+
+export type BotSettings = {
+    settings: Settings,
+} & Privacy;
+
 
 export type Types = { SerializedMessage: SerializedMessage, }
