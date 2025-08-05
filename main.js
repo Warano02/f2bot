@@ -202,12 +202,12 @@ async function handleMessages(Tayc, messageUpdate) {
             prefix,
             from: chatId,          // alias
             botMode: settings.mode,
-            settings,              // full bot settings
+            settings,              
             participants: m.participants || [],
             groupMetadata: m.groupMetadata || {},
             quotedMessage: m.quoted?.text || null,
             command: '',
-            botContact, //  Real number of the bot user 
+            botContact,
             markAsRead,
             FORWARDMESSAGE,
             estimateForwardTime,
@@ -219,10 +219,10 @@ async function handleMessages(Tayc, messageUpdate) {
             text: "",
             allCommands,
             Settings: LOADSETTINGS(),
-            saveNewSetting, // function to save new settings
+            saveNewSetting, 
             full: '',
             cmd: "",
-            raw: message           // original Baileys message
+            raw: message        
         };
 
 

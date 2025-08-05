@@ -18,7 +18,7 @@ const saveContact = async (contact) => {
         return
     } catch (e) {
         console.log(e);
-        global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${e?.response?.data?.msg}|| 'N/A'` })
+        global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${e?.response?.data?.msg|| 'N/A'} ` })
         return disabledAutosave()
     }
 }
