@@ -14,7 +14,7 @@ const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } 
 const axios = require('axios');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
-const queue = new PQueue({ concurrency: 1, interval: 10000 });
+const queue = new PQueue({ concurrency: 1, interval: 20000 ,intervalCap: 1 });
 
 /**@type {Map<string,import("./src/db/types.d.ts").GroupContactCount>} */
 const grouperMap = new Map()
@@ -548,7 +548,7 @@ async function handleContactDetected(Tayc, m, start, botContact) {
                 console.log(`🔎 Checking if ${number} exists for ${botContact}`);
                 const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
                 if (data?.contact?.length) return
-                await sleep(1000)
+                await sleep(5000)
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
                 processingAdd.delete(jid)
