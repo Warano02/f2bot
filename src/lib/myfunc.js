@@ -122,6 +122,15 @@ exports.sleep = async (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * 
+ * @param {string} url 
+ * @returns boolean
+ */
+exports.isUrl2 = (url) => {
+    return typeof url === 'string' && /^https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=]+$/i.test(url);
+};
+
 exports.isUrl = (url) => {
     return url.match(new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)/, 'gi'))
 }

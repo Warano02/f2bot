@@ -28,6 +28,7 @@ const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
 const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
 const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
+
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -344,6 +345,7 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, 
         phone: botNumber.split("@")[0].split(":")[0],
         chatId, msg: body, prompt
     }
+    
     try {
         simulatePresence("composing", 8000)
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
@@ -780,81 +782,6 @@ async function handleMessageEdit(sock, m, botNumber) {
     }
 }
 
-
-
-
-// Function to handle status updates
-const viewedStatusCache = new Set();
-
-async function handleStatusUpdate(sock, update) {
-    try {
-        const config = GETSETTINGS();
-        const statusBlackList = GETPRIVACY().statusblacklist || [];
-        if (!config.autoviewstatus) return;
-
-        const msg = update?.messages?.[0];
-        const key = msg?.key;
-        const messageId = key?.id;
-
-        if (!msg || !key || key.remoteJid !== 'status@broadcast' || key.fromMe) return;
-        const sender = key.participant;
-        if (!sender || statusBlackList.includes(sender) || viewedStatusCache.has(messageId)) return;
-        viewedStatusCache.add(messageId);
-        console.log(chalk.yellowBright("[STATUS]"), chalk.blueBright("Status update detected"));
-        await sleep(2000)
-        // === Mark as vie ===
-        try {
-            await sock.readMessages([key]);
-        } catch (err) {
-            if (err.message?.includes('rate-overlimit')) {
-                console.log('⚠️ Rate limit hit. Retrying...');
-                await new Promise(res => setTimeout(res, 2000));
-                await sock.readMessages([key]);
-            } else {
-                console.error('❌ Error viewing status:', err.message);
-                return;
-            }
-        }
-
-        // === Auto react ===
-        if (config.autoreactstatus) {
-            const emojis = (config.statusemojis || "").split(",").map(e => e.trim()).filter(Boolean);
-            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-
-            if (emoji) {
-                try {
-                    await sock.sendMessage(sender, {
-                        react: { text: emoji, key },
-                        statusJidList: [sender, sock.user.id]
-                    });
-                    console.log(`🎉 Reacted with ${emoji} to ${sender.split('@')[0]} story`);
-                } catch (e) {
-                    console.error("❌ Failed to react to status:", e.message);
-                }
-            }
-        }
-
-        const content = msg.message?.extendedTextMessage?.text;
-
-        if (config.autoreplystatus && content) {
-            const payload = {
-                phone: sender.split("@")[0],
-                msg: content,
-                name: msg?.pushName
-            }
-            try {
-                const r = await axios.post(global.api + "/api/so", payload)
-                await sock.sendMessage(sender, { text: r.data.msg }, { quoted: msg });
-            } catch (err) {
-                console.error("❌ Failed to auto-reply:", err.message);
-            }
-        }
-    } catch (error) {
-        console.error('❌ Error in handleStatusUpdate:', error.message);
-    }
-}
-
-
 function loadCommandsGroupedByCategory() {
     const commandsDir = path.join(__dirname, './src/cmd')
     const categories = {}
@@ -911,7 +838,6 @@ async function ScheduledMessages(Tayc) {
 module.exports = {
     getPrompt,
     handleMessages,
-    handleStatusUpdate,
     ScheduledMessages,
     saveNewSetting
 };

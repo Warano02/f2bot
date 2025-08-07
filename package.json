@@ -26,7 +26,6 @@
     "emoji-flags": "^1.3.0",
     "events": "^3.3.0",
     "file-type": "^16.5.4",
-    "fluent-ffmpeg": "^2.1.3",
     "fs-extra": "^11.2.0",
     "gtts": "^0.2.1",
     "human-readable": "^0.2.1",

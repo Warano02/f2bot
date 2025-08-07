@@ -15,7 +15,7 @@ const {
 } = require("@whiskeysockets/baileys")
 require("./src/db/config")
 
-const { handleMessages, handleStatusUpdate, ScheduledMessages } = require('./main')
+const { handleMessages, ScheduledMessages } = require('./main')
 const { loadCommands, watchCommands } = require('./src/lib/loader')
 
 const { startAutoClear } = require('./src/lib/myfunc2')
@@ -52,6 +52,7 @@ function generateBotInfoCard({
 const package = require('./package.json')
 const { LOADSETTINGS } = require("./src/lib/myfunc")
 const handleGroupParticipantUpdate = require("./src/utils/handler/handleGroupParticipantUpdate")
+const handleStatusUpdate = require("./src/utils/handler/handleStatus")
 const stngs = LOADSETTINGS()
 
 const store = {
