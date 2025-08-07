@@ -591,7 +591,8 @@ async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPriva
         const number = m.chat.split("@")[0]
         const kk = parsePhoneNumberFromString(`+${number}`)
         const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-        return saveContact(c, true)
+        await saveContact(c, true)
+        return diffusionModeContacts.set(m.chat)
     } catch (e) {
         sendPrivate("Fail to save contact for your diffusion ", e?.response?.msg || e)
     }

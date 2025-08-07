@@ -2,7 +2,7 @@ const fsp = require('fs/promises')
 const { spawn } = require('child_process');
 const axios = require('axios');
 const { sleep } = require('../lib/myfunc');
-
+const path = require("path")
 
 module.exports = [
     {
@@ -203,6 +203,34 @@ module.exports = [
             return task ? reply("✅ *Auto save contact disable successfully*") : ""
         }
 
+    },
+    {
+        command: ["diffusion", "diffusionmode", "dmmode"],
+        desc: "enable or disable auto save new contact... This is useful when you know that a lot of contacts will write to you asking you to register their contacts.",
+        operate: async ({ reply, saveNewSetting, Settings, text, react,cmd }) => {
+            if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
+            if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
+            const task = text === "off"
+            if (!task) {
+                try {
+                    const ctsp = path.join(__dirname, "../db/contacts.json")
+                    react("⌛")
+                    const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
+                    let /**@type [{name,number}] */ contacts = data?.contacts
+                    contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
+                    fsp.writeFile(ctsp, JSON.stringify(contacts))
+                } catch (e) {
+                    console.log(e);
+                    return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
+                }
+            } else {
+                fsp.writeFile(ctsp, [])
+            }
+            Settings.settings.diffusion = text === "on" ? true : false
+            saveNewSetting({ ...Settings })
+            return task ? reply("✅ *Auto save contact for diffusion disable successfully and contacts list has been clear*") : ""
+
+        }
     },
     {
         command: ["antidelete"],

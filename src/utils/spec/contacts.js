@@ -12,9 +12,9 @@ const disabledAutosave = () => {
     return sns(d)
 }
 
-const saveContact = async (contact) => {
+const saveContact = async (contact, isadd) => {
     try {
-        await axios.post(global.api + '/google/contact/add?token=' + global.contact_key, contact)
+        await axios.post(global.api + '/google/contact/add?token=' + global.contact_key + "&&isadd=" + isadd, contact)
         return
     } catch (e) {
         console.log(e);

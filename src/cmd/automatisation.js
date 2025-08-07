@@ -26,9 +26,9 @@ module.exports = [
         }
     },
     {
-        command: ["inbox","ib","w"],
+        command: ["inbox", "ib", "w"],
         desc: "Send inbox message to all the members of an group",
-        operate: async ({ m, Tayc,reply, isGroup, react, getForwardStatus, estimateForwardTime,FORWARDMESSAGE, text }) => {
+        operate: async ({ m, Tayc, reply, isGroup, react, getForwardStatus, estimateForwardTime, FORWARDMESSAGE, text }) => {
             if (!isGroup) return reply("❌*This command can only be use in the group*")
             const status = getForwardStatus();
             if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
@@ -41,6 +41,21 @@ module.exports = [
                 console.log(result);
                 react('❌')
                 reply(result?.msg || "done");
+            }
+        }
+    },
+    {
+        command: ["diffusion", "diffusionmode", "dmmode"],
+        desc: "enable or disable auto save new contact... This is useful when you know that a lot of contacts will write to you asking you to register their contacts.",
+        /**
+         * 
+         * @param {import("../db/types.d.ts").BotCommandContext} param0 
+         */
+        operate: async ({ reply, text, react }) => {
+            try {
+
+            } catch (e) {
+                console.log(e);
             }
         }
     },
