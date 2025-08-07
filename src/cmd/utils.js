@@ -40,6 +40,7 @@ module.exports = [
             if (!m.quoted || m.quoted.chat !== 'status@broadcast') return reply(`*❌Invalid usage*. Reply to an status using ${cmd}`)
             await statusDownloader({ Tayc, m, chatId })
         }
-    }
+    },
+    
 
 ]
