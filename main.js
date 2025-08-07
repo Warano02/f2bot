@@ -587,6 +587,8 @@ async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPriva
         queue.add(async () => {
             await sleep(5000)
             await reply(privacy.mess.diffusionmode)
+            contact.push(m.chat)
+            fs.writeFileSync(path.join(__dirname, "./src/db/contacts.json"),JSON.stringify(contact))
             return markAsRead()
         })
 
