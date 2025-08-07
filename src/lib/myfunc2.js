@@ -122,6 +122,26 @@ exports.buffergif = async (image) => {
 	return buffer;
 };
 
+/**
+ * 
+ * @param {string} groupId 
+ * @returns Object{}
+ */
+
+exports.loadAntibadwordConfig = (groupId) => {
+	try {
+		const configPath = path.join(__dirname, '../db/userGroupData.json');
+		if (!fs.existsSync(configPath)) {
+			return {};
+		}
+		const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+		return data.antibadword?.[groupId] || {};
+	} catch (error) {
+		console.error('❌ Error loading antibadword config:', error.message);
+		return {};
+	}
+}
+
 async function deletePathAsync(filePath) {
 	try {
 		const stat = await fsp.stat(filePath);

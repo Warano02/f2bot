@@ -72,12 +72,14 @@ export type Settings = {
     autoviewstatus: boolean;
     autoreactstatus: boolean;
     autoreplystatus: boolean;
+    diffusion:boolean;
     statusemojis: string;
 };
 
 export type Privacy = {
     mess: {
         addNewContact: string;
+        diffusionmode:string;
     };
     statusblacklist: string[];
     sudo: string[]; // JIDs des admins
@@ -132,6 +134,7 @@ export type BotCommandContext = {
     Settings: BotSettings;
     saveNewSetting: () => void;
     full: string;
+    body:string;
     cmd: string;
     raw: proto.IWebMessageInfo;
 };

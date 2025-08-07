@@ -2,7 +2,6 @@ const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } 
 const fs = require('fs');
 const path = require('path');
 
-const { incrementWarningCount, getAntiBadword, getAntilink } = require('./src/lib/index');
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
 const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
@@ -14,7 +13,7 @@ const { FORWARDMESSAGE, estimateForwardTime, getForwardStatus, stopForwarding } 
 const axios = require('axios');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
-const queue = new PQueue({ concurrency: 1, interval: 20000 ,intervalCap: 1 });
+const queue = new PQueue({ concurrency: 1, interval: 20000, intervalCap: 1 });
 
 /**@type {Map<string,import("./src/db/types.d.ts").GroupContactCount>} */
 const grouperMap = new Map()
@@ -22,11 +21,13 @@ const groupSave = new Map()
 const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
+const diffusionModeContacts = new Map()
 const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
 const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
+const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
@@ -109,6 +110,10 @@ async function handleMessages(Tayc, messageUpdate) {
         //  console.log(m);
 
         if (!m || !m.body) return;
+        if (!m.isGroup) {
+            global.lastreceivemessage = Date.now()
+            console.log('last receive messge', global.lastreceivemessage);
+        }
 
         const chatId = m.chat;
         const senderJid = m.sender;
@@ -154,29 +159,22 @@ async function handleMessages(Tayc, messageUpdate) {
         const sendText = async (text) => await Tayc.sendMessage(chatId, { text });
         const sendPrivate = async (text, mentions = []) => await Tayc.sendMessage(botNumber, { text, mentions })
 
-        const react = async (emoji) => await Tayc.sendMessage(chatId, {
-            react: { text: emoji, key: m.key }
-        });
+        const react = async (emoji) => await Tayc.sendMessage(chatId, { react: { text: emoji, key: m.key } });
+
         const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
+
         // === Receive contact ===
-        if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) {
-            await handleContactDetected(Tayc, m, settings.awc, botContact);
-            return;
-        }
+        if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) return handleContactDetected(Tayc, m, settings.awc, botContact, markAsRead);
 
         await storeMessage(m, m.fromMe);
 
         // === Message revoked ===
-        if (m.mtype === 'protocolMessage' && m.message?.protocolMessage?.type === 0) {
-            await handleMessageRevocation(Tayc, m, botNumber);
-            return;
-        }
+        if (m.mtype === 'protocolMessage' && m.message?.protocolMessage?.type === 0) return handleMessageRevocation(Tayc, m, botNumber);
+
 
         // === Edit message ===
-        if (m.message?.protocolMessage?.type === 14) {
-            await handleMessageEdit(Tayc, message, botNumber);
-            return;
-        }
+        if (m.message?.protocolMessage?.type === 14) return handleMessageEdit(Tayc, message, botNumber);
+
         if (m?.mtype === "protocolMessage") return
         logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
@@ -263,7 +261,6 @@ async function handleMessages(Tayc, messageUpdate) {
             if (!matched) return
 
             if (taycMode === "private" && !context.isOwner) {
-
                 react("🚬")
                 return
             }
@@ -288,6 +285,9 @@ async function handleMessages(Tayc, messageUpdate) {
             await handleQuotedMessage(context)
         }
 
+        if (settings.diffusion && !diffusionModeContacts.has(m.chat)) {
+            await handleDiffuionContact(context)
+        }
     } catch (error) {
         console.error('❌ Error in handleMessages:', error);
         await Tayc.sendMessage(Tayc.user.id, {
@@ -296,22 +296,6 @@ async function handleMessages(Tayc, messageUpdate) {
     }
 }
 
-// === When user where bot send message reply ===
-async function handleAddUserResponse({ reply, m, chatId, settings }) {
-    try {
-        if (m.fromMe || !settings?.asc) return addQeu.delete(chatId)
-        queue.add(async () => {
-            const l = addQeu.get(chatId)
-            const kk = parsePhoneNumberFromString(l?.number.startsWith("+") ? l?.number : "+" + l?.number)
-            const c = { number: l?.number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-            await saveContact(c)
-            addQeu.delete(chatId)
-        })
-        return
-    } catch (e) {
-        console.log(e);
-    }
-}
 
 // === handle training data ===
 async function handleTrainingMessage({ Tayc, m, chatId, botNumber, prefix, Settings, body }) {
@@ -470,7 +454,10 @@ async function storeMessage(message, isUser) {
     }
 }
 
-// Prompt for chatbot
+/**
+ * 
+ * @returns string - the prompt of user
+ */
 function getPrompt() {
     const promptFile = path.join(__dirname, './prompt.txt');
     const defaultPrompt = "You are a helpful assistant.";
@@ -495,7 +482,7 @@ function getPrompt() {
  * @param {string} botContact 
  * @returns 
  */
-async function handleContactDetected(Tayc, m, start, botContact) {
+async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
     if (m.isGroup && !groupSave.has(m.chat) && m.amGroupAdmin) {
         let tmp_d = grouperMap.get(m.chat)
         console.log(tmp_d);
@@ -536,6 +523,7 @@ async function handleContactDetected(Tayc, m, start, botContact) {
         );
     }
     console.log(chalk.cyan(`🔍 Found ${rawContacts.length} contact(s)`));
+    await markAsRead()
     for (const contact of rawContacts) {
         const number = extractPhoneNumber(contact.vcard);
         if (!number) continue;
@@ -558,9 +546,55 @@ async function handleContactDetected(Tayc, m, start, botContact) {
                 return false
             }
         })
-
     }
 
+}
+
+/**
+ * When user where bot send message reply
+ * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
+ * @returns void
+ */
+async function handleAddUserResponse({ reply, m, chatId, settings }) {
+    try {
+        if (m.fromMe || !settings?.asc) return addQeu.delete(chatId)
+        queue.add(async () => {
+            const l = addQeu.get(chatId)
+            const kk = parsePhoneNumberFromString(l?.number.startsWith("+") ? l?.number : "+" + l?.number)
+            const c = { number: l?.number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+            await saveContact(c)
+            addQeu.delete(chatId)
+        })
+        return
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+/**
+ * Chatbot
+ * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
+ * @returns void
+ */
+async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPrivate }) {
+    try {
+        const privacy = GETPRIVACY()
+        const contact = JSON.parse(fs.readFileSync(path.join(__dirname, "./src/db/contacts.json"), "utf-8"))
+        if (contact.includes(m.chat) || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat)) return
+
+        queue.add(async () => {
+            await sleep(5000)
+            await reply(privacy.mess.diffusionmode)
+            return markAsRead()
+        })
+
+        const number = m.chat.split("@")[0]
+        const kk = parsePhoneNumberFromString(`+${number}`)
+        const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+        return saveContact(c, true)
+    } catch (e) {
+        sendPrivate("Fail to save contact for your diffusion ", e?.response?.msg || e)
+    }
 }
 
 const backUpGroups = async () => {
@@ -745,128 +779,8 @@ async function handleMessageEdit(sock, m, botNumber) {
     }
 }
 
-function loadAntibadwordConfig(groupId) {
-    try {
-        const configPath = path.join(__dirname, './src/db/userGroupData.json');
-        if (!fs.existsSync(configPath)) {
-            return {};
-        }
-        const data = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-        return data.antibadword?.[groupId] || {};
-    } catch (error) {
-        console.error('❌ Error loading antibadword config:', error.message);
-        return {};
-    }
-}
-
-// antibadword
-async function handleBadwordDetection({ Tayc, chatId, body, amGroupAdmin, deleteM, sender, reply, Settings, isBotUser, isGroupAdmin }) {
-    if (isBotUser || isGroupAdmin || !amGroupAdmin || !body) return;
-    const [config, antiBadwordConfig] = await Promise.all([
-        loadAntibadwordConfig(chatId),
-        getAntiBadword(chatId, 'on')
-    ]);
-    if (!config?.enabled || !antiBadwordConfig?.enabled) return;
-    const badWords = Settings.badWords || [];
-    const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const pattern = new RegExp(`\\b(${badWords.map(escapeRegExp).join('|')})\\b`, 'i');
-    const containsBadWord = pattern.test(body);
-    if (!containsBadWord) return;
-
-    await deleteM();
-
-    const mentionTag = `@${sender.split('@')[0]}`;
-    const mentionList = [sender];
-
-    const kickUser = async () => {
-        try {
-            await Tayc.groupParticipantsUpdate(chatId, [sender], 'remove');
-            await Tayc.sendMessage(chatId, {
-                text: `*${mentionTag} has been kicked for using bad words*`,
-                mentions: mentionList
-            });
-        } catch (err) {
-            console.error('❌ Error kicking user:', err);
-        }
-    };
-
-    switch (antiBadwordConfig.action) {
-        case 'delete':
-            await reply(`*${mentionTag} bad words are not allowed here*`, mentionList);
-            break;
-
-        case 'kick':
-            await kickUser();
-            break;
-
-        case 'warn':
-            const warningCount = await incrementWarningCount(chatId, sender);
-            if (warningCount >= 3) {
-                await kickUser();
-            } else {
-                await Tayc.sendMessage(chatId, {
-                    text: `*${mentionTag} warning ${warningCount}/3 for using bad words*`,
-                    mentions: mentionList
-                });
-            }
-            break;
-    }
-}
 
 
-
-
-// antilink
-async function Antilink({ Tayc, body, sender, reply, deleteM, isBotUser, chatId, amGroupAdmin, isGroupAdmin }) {
-    if (isBotUser || isGroupAdmin || !amGroupAdmin || !body) return;
-    const whiteListLinks = ['youtube.com', 't.me/', 'sapjasha.com', 'wa.me/', 'whatsapp.com/'];
-    const linkRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/i;
-    const hasLink = linkRegex.test(body);
-
-    if (!hasLink || whiteListLinks.some(link => body.includes(link))) return;
-
-    const antilinkConfig = await getAntilink(chatId, 'on');
-    if (!antilinkConfig) return;
-
-    await deleteM();
-
-    const mentionTag = `@${sender.split('@')[0]}`;
-    const mentionList = [sender];
-
-    const kickUser = async () => {
-        try {
-            await Tayc.groupParticipantsUpdate(chatId, [sender], 'remove');
-            await Tayc.sendMessage(chatId, {
-                text: `*${mentionTag} has been kicked for using bad words*`,
-                mentions: mentionList
-            });
-        } catch (err) {
-            console.error('❌ Error kicking user:', err);
-        }
-    };
-
-    switch (antilinkConfig.action) {
-        case 'delete':
-            await reply(`*${mentionTag} links are not allowed here*`, mentionList);
-            break;
-
-        case 'kick':
-            await kickUser();
-            break;
-
-        case 'warn':
-            const warningCount = await incrementWarningCount(chatId, sender);
-            if (warningCount >= 3) {
-                await kickUser();
-            } else {
-                await Tayc.sendMessage(chatId, {
-                    text: `*${mentionTag} warning ${warningCount}/3 for using bad words*`,
-                    mentions: mentionList
-                });
-            }
-            break;
-    }
-}
 
 // Function to handle status updates
 const viewedStatusCache = new Set();

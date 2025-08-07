@@ -11,6 +11,7 @@
     "addprefix": "tayc",
     "asc": false,
     "mode": "private",
+    "diffusion":false,
     "antidelete": "private",
     "antiedite": "private",
     "autoviewstatus": true,
@@ -19,7 +20,8 @@
     "statusemojis": "👑"
   },
   "mess": {
-    "addNewContact": ""
+    "addNewContact": "",
+    "diffusionmode":"*Contact save successffully !*"
   },
   "statusblacklist": [],
   "sudo": [

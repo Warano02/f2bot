@@ -115,13 +115,18 @@ async function FORWARDMESSAGE(Tayc, Jids, mess) {
         if (globalForwardState.stopSignal) break;
 
         try {
+            while (Date.now() - global.lastreceivemessage < 20000) {
+                const wait = 20000 - (Date.now() - global.lastreceivemessage);
+                console.log(`🕒Forwarding pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+                await sleep(10000);
+            }
+
             await Tayc.sendMessage(jid, { text: mess });
             success.push(jid);
             globalForwardState.sent++;
         } catch (e) {
             error.push(jid);
             globalForwardState.error++;
-
             if (
                 e.message?.includes("user-not-found") ||
                 e.message?.includes("blocked") ||
