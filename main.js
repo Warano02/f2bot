@@ -580,7 +580,7 @@ async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPriva
     try {
         const privacy = GETPRIVACY()
         const contact = JSON.parse(fs.readFileSync(path.join(__dirname, "./src/db/contacts.json"), "utf-8"))
-        if (contact.includes(m.chat) || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat)) return
+        if (contact.includes(m.chat) || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
 
         queue.add(async () => {
             await sleep(5000)

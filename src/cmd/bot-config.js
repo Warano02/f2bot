@@ -180,21 +180,19 @@ module.exports = [
     {
         command: ["autosavecontact", "asc"],
         desc: "Control the bot auto save contact",
-        operate: async ({ reply, Tayc, react, m, chatId, text, cmd, Settings, saveNewSetting }) => {
+        operate: async ({ reply, Tayc, react, chatId, text, cmd, Settings, saveNewSetting }) => {
             if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
             if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
             const task = text === "off"
             if (!task) {
                 try {
                     react("⌛")
-
                     const { data } = await axios.get(global.api + "/google/cansave?token=" + global.contact_key)
                     const response = await axios.get(data?.user?.profil, { responseType: 'arraybuffer' });
                     const buffer = Buffer.from(response.data, 'binary');
                     await Tayc.sendMessage(chatId, { image: buffer, caption: `✅ Auto save contact enable successfully to this account by the name *${data?.user?.name}*, for you ${Tayc?.user.name}.\n  ` })
                 } catch (e) {
                     console.log(e);
-
                     return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
                 }
             }
@@ -202,18 +200,18 @@ module.exports = [
             saveNewSetting({ ...Settings })
             return task ? reply("✅ *Auto save contact disable successfully*") : ""
         }
-
     },
     {
         command: ["diffusion", "diffusionmode", "dmmode"],
         desc: "enable or disable auto save new contact... This is useful when you know that a lot of contacts will write to you asking you to register their contacts.",
-        operate: async ({ reply, saveNewSetting, Settings, text, react,cmd }) => {
+        operate: async ({ reply, saveNewSetting, Settings, text, react, cmd }) => {
             if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
             if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
             const task = text === "off"
+            const ctsp = path.join(__dirname, "../db/contacts.json")
+
             if (!task) {
                 try {
-                    const ctsp = path.join(__dirname, "../db/contacts.json")
                     react("⌛")
                     const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
                     let /**@type [{name,number}] */ contacts = data?.contacts
@@ -224,7 +222,7 @@ module.exports = [
                     return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
                 }
             } else {
-                fsp.writeFile(ctsp, [])
+                fsp.writeFile(ctsp, JSON.stringify([]))
             }
             Settings.settings.diffusion = text === "on" ? true : false
             saveNewSetting({ ...Settings })

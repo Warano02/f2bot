@@ -45,21 +45,6 @@ module.exports = [
         }
     },
     {
-        command: ["diffusion", "diffusionmode", "dmmode"],
-        desc: "enable or disable auto save new contact... This is useful when you know that a lot of contacts will write to you asking you to register their contacts.",
-        /**
-         * 
-         * @param {import("../db/types.d.ts").BotCommandContext} param0 
-         */
-        operate: async ({ reply, text, react }) => {
-            try {
-
-            } catch (e) {
-                console.log(e);
-            }
-        }
-    },
-    {
         command: ["forward", "fw",],
         desc: "Forward message to contacts inside a .vcf (reply to vcf)",
         operate: async ({ Tayc, m, text, reply, FORWARDMESSAGE, cmd, react, getForwardStatus }) => {
