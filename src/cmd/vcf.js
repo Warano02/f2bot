@@ -51,8 +51,36 @@ module.exports = [
             const list = tab.map((el, i) => i + 1 + ". @" + el.number).join("\n")
             const tags = tab.map(e => e.jid)
             console.log(tags);
-            
-            reply(`Here is all the ${tab.length} contact(s):\n${list}\n\n> Take All You Can`, tags)
+
+            await reply(`Here is all the ${tab.length} contact(s):\n${list}\n\n> Take All You Can`, tags)
+        }
+    },
+    {
+        command: ["tovcf", "tagtovcf", "tagalltovcf", "ttvcf"],
+        desc: "allows you to transform the tagAll that you have recovered into a vcf file that you can then process",
+        /**
+         * 
+         * @param {import('../db/types.d.ts').BotCommandContext} param0 
+         */
+        operate: async ({ Tayc, m, reply, text }) => {
+            if (!text) return reply(`*Please provide the tagall message*`)
+            let txt = text.trim()
+                .split("\n")
+                .map(e => e.replaceAll(" ", "").split('@'))
+                .map(e => e[1] || e[0])
+                .map(e => e.replaceAll(/[^\d]/g, ""))
+                .filter(e => /^\d+$/.test(e) && e.length > 5)
+                .map((e, i) => { return { name: `addByTayc-${i}`, number: e } })
+
+            if (!txt.length) return reply("0 valid contact found")
+            const c = new VCFUTILS(txt)
+            await Tayc.sendMessage(
+                m.chat,
+                {
+                    document: c.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅ Tag to vcf. ${txt.length} valid contacts!`,
+                },
+                { quoted: m, ephemeralExpiration: 86400 }
+            );
         }
     }
 ];

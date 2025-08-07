@@ -416,7 +416,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted.download = async () => await downloadMediaMessage(vM, 'buffer', {}, { reuploadRequest: TaycInc.updateMediaMessage })
 
             // Si VCF
-            const isVcf = quoted?.documentMessage?.mimetype === 'text/x-vcard'
+            const isVcf = quoted?.documentMessage?.mimetype === 'text/x-vcard'||quoted?.documentMessage?.mimetype==='text/vcard'
             if (isVcf) {
                 try {
                     const buffer = await downloadMediaMessage(vM, 'buffer', {}, {

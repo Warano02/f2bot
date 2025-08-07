@@ -30,9 +30,10 @@ async function handleStatusUpdate(sock, update) {
 
         statusQueue.add(async () => {
             try {
+                await sleep(5000)
                 await sock.readMessages([key]);
             } catch (e) {
-                console.error('❌ Error viewing status:', err.message);
+                console.error('❌ Error viewing status:', e.message);
             }
         })
 
