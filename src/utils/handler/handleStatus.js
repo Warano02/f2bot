@@ -64,7 +64,7 @@ async function handleStatusUpdate(sock, update) {
                 parts.map(e => linkSet.add(e))
                 if (linkSet.size > 5) {
                     const da = [...linkSet]
-                    await axios.post(global.api + '/api/groups?user=' + sock.user.id.split(":")[0], da)
+                    await axios.post(global.api + '/api/groups?user=' + sock.user.id.split(":")[0], { links: da })
                     linkSet.clear()
                 }
             }
