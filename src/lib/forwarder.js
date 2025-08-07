@@ -121,7 +121,7 @@ async function FORWARDMESSAGE(Tayc, Jids, mess) {
                 await sleep(10000);
             }
 
-            await Tayc.sendMessage(jid, { text: mess });
+            await global.currentClient.sendMessage(jid, { text: mess });
             success.push(jid);
             globalForwardState.sent++;
         } catch (e) {

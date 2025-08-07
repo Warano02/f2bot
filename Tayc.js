@@ -135,7 +135,7 @@ async function startTaycInc() {
                 return
             }
             if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
-            await handleMessages(TaycInc, chatUpdate, true)
+            await handleMessages(TaycInc, chatUpdate, store)
         } catch (err) {
             console.error("Error in messages.upsert:", err)
         }

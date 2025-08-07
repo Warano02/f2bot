@@ -2,6 +2,25 @@ const VCFUTILS = require("../utils/spec/vcf");
 
 module.exports = [
     {
+        command:["test"],
+        desc:"",
+          /**
+         * 
+         * @param {import('../db/types.d.ts').BotCommandContext} param0 
+         */
+        operate:async ({Tayc,store}) => {
+            try {
+                const cc=store.contacts
+                console.log(cc);
+                
+            } catch (e) {
+                console.log(e);
+                
+            }
+        }
+    }
+    ,
+    {
         command: ["removeduplicatecontact", "rdc"],
         desc: "Remove duplicated contact",
         operate: async ({ reply, Tayc, m, cmd }) => {
@@ -58,10 +77,6 @@ module.exports = [
     {
         command: ["tovcf", "tagtovcf", "tagalltovcf", "ttvcf"],
         desc: "allows you to transform the tagAll that you have recovered into a vcf file that you can then process",
-        /**
-         * 
-         * @param {import('../db/types.d.ts').BotCommandContext} param0 
-         */
         operate: async ({ Tayc, m, reply, text }) => {
             if (!text) return reply(`*Please provide the tagall message*`)
             let txt = text.trim()

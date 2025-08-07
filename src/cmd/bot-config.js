@@ -226,8 +226,7 @@ module.exports = [
             }
             Settings.settings.diffusion = text === "on" ? true : false
             saveNewSetting({ ...Settings })
-            return task ? reply("✅ *Auto save contact for diffusion disable successfully and contacts list has been clear*") : ""
-
+            return reply(`✅ *Auto save contact for diffusion ${task ? "disable" : "enable"} successfully ${task ? 'contacts list has been clear' : ""}.*`)
         }
     },
     {

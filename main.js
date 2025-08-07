@@ -92,7 +92,7 @@ function saveNewSetting(newSettings) {
  * @param {(import("@whiskeysockets/baileys").MessageUserReceiptUpdate)} messageUpdate 
  * @returns void
  */
-async function handleMessages(Tayc, messageUpdate) {
+async function handleMessages(Tayc, messageUpdate,store) {
     try {
         const settings = GETSETTINGS();
         const COMMANDS = getCommands();
@@ -205,6 +205,7 @@ async function handleMessages(Tayc, messageUpdate) {
             from: chatId,          // alias
             botMode: settings.mode,
             settings,
+            store,
             participants: m.participants || [],
             groupMetadata: m.groupMetadata || {},
             quotedMessage: m.quoted?.text || null,
