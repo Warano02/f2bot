@@ -23,7 +23,11 @@ module.exports = [
         operate: async ({ reply }) => {
             reply(`*Restarting...*`);
             await sleep(3000);
-            spawn("node", [path.join(__dirname, "../../index.js")], { stdio: "inherit" });
+            spawn(process.argv[0], [path.join(__dirname, "../../index.js")], {
+                stdio: "inherit",
+                detached: true
+            });
+            process.exit(0);
         }
     },
     {
