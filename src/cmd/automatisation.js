@@ -1,3 +1,4 @@
+const axios = require("axios");
 const { sleep } = require("../lib/myfunc");
 
 module.exports = [
@@ -47,12 +48,36 @@ module.exports = [
     {
         command: ["adds", "sendaddmess", "sendaddmessage"],
         desc: "allows you to send a message to all members of a group but who are not in the user's contact list. This can, for example, be useful for broadcasting a message to contacts to ask them to register.",
-        operate: async ({ }) => {
+        /**
+         * 
+         * @param {import("../db/types.d.ts").BotCommandContext} param0 
+         * @returns 
+         */
+        operate: async ({ m, Tayc, reply, isGroup, react, getForwardStatus, Settings, estimateForwardTime, FORWARDMESSAGE, text }) => {
             if (!isGroup) return reply("❌*This command can only be use in the group*")
+
             const status = getForwardStatus();
             if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
-            const t = m?.groupMetadata.participants.map(e => e.jid)
-            if (!text) return reply("*❌ Please provide the text to forward*")
+            try {
+                react("⌛")
+                const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
+                react("")
+                let contacts = data?.contacts
+                contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
+                const t = m?.groupMetadata.participants.map(e => e.jid)
+                const tab = [...(new Set([...contacts, ...t]))]
+                if (!tab.length) return reply("*You already have all the contacts of this group*")
+                await reply(`*🚨 To forward, i'll take ${estimateForwardTime(t.length).human}* to ib this ${t.length} members where you don't have.`)
+                const result = await FORWARDMESSAGE(Tayc, tab, text || Settings.mess.addNewContact);
+                if (result?.error) {
+                    console.log(result);
+                    react('❌')
+                    reply(result?.msg || "done");
+                }
+            } catch (e) {
+                console.log(e);
+                return reply(`❌ *You can't enable forward*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
+            }
         }
     },
     {

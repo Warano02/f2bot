@@ -41,7 +41,7 @@ module.exports = [
         operate: ({ reply, text, settings, Settings, saveNewSetting }) => {
             if (!text) return reply(`❌*Please provide the text*. Now, when you receive contact(for exemple if the name of user is Warano), i'll save as *Warano ${settings?.addprefix} <country flag>*.`)
             Settings.settings.addprefix = text
-            saveNewSetting({...Settings})
+            saveNewSetting({ ...Settings })
             reply(`✅*Auto save contact prefix set to ${text} successfully*`)
         }
     }
