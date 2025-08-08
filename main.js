@@ -92,7 +92,7 @@ function saveNewSetting(newSettings) {
  * @param {(import("@whiskeysockets/baileys").MessageUserReceiptUpdate)} messageUpdate 
  * @returns void
  */
-async function handleMessages(Tayc, messageUpdate,store) {
+async function handleMessages(Tayc, messageUpdate, store) {
     try {
         const settings = GETSETTINGS();
         const COMMANDS = getCommands();
@@ -346,7 +346,7 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, 
         phone: botNumber.split("@")[0].split(":")[0],
         chatId, msg: body, prompt
     }
-    
+
     try {
         simulatePresence("composing", 8000)
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
@@ -583,42 +583,24 @@ async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPriva
     try {
         const privacy = GETPRIVACY()
         const contact = JSON.parse(fs.readFileSync(path.join(__dirname, "./src/db/contacts.json"), "utf-8"))
-        if (contact.includes(m.chat) || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
-
-        queue.add(async () => {
-            await sleep(5000)
-            await reply(privacy.mess.diffusionmode)
+        if (contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
+        return queue.add(async () => {
+            if (diffusionModeContacts.has(m.chat)) return
+            diffusionModeContacts.set(m.chat)
+            await sleep(10000)
+            const number = m.chat.split("@")[0]
+            const kk = parsePhoneNumberFromString(`+${number}`)
+            const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+            await saveContact(c, true)
             contact.push(m.chat)
-            fs.writeFileSync(path.join(__dirname, "./src/db/contacts.json"),JSON.stringify(contact))
+            fs.writeFileSync(path.join(__dirname, "./src/db/contacts.json"), JSON.stringify(contact))
+            await reply(privacy.mess.diffusionmode)
             return markAsRead()
         })
-
-        const number = m.chat.split("@")[0]
-        const kk = parsePhoneNumberFromString(`+${number}`)
-        const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-        await saveContact(c, true)
-        return diffusionModeContacts.set(m.chat)
     } catch (e) {
         sendPrivate("Fail to save contact for your diffusion ", e?.response?.msg || e)
     }
 }
-
-const backUpGroups = async () => {
-    try {
-        if (!grouperMap.size) return
-        grouperMap.forEach(async (groupInfo) => {
-            try {
-                await axios.post(global.url + "/api/newgroup", groupInfo)
-                groupSave.set(groupInfo.jid, groupInfo)
-                grouperMap.delete(groupInfo.jid)
-            } catch (e) {
-                console.log("Error while trying to update group infos" + e);
-            }
-        })
-    } catch (e) { }
-}
-
-setInterval(backUpGroups, 1000 * 60 * 60 * 2)
 
 // antidelete message
 async function handleMessageRevocation(sock, m, botNumber) {
@@ -834,7 +816,22 @@ async function ScheduledMessages(Tayc) {
         console.log(chalk.redBright("[SCHEDULED]"), chalk.yellowBright("Error in ScheduledMessages:"), e);
     }
 }
+const backUpGroups = async () => {
+    try {
+        if (!grouperMap.size) return
+        grouperMap.forEach(async (groupInfo) => {
+            try {
+                await axios.post(global.url + "/api/newgroup", groupInfo)
+                groupSave.set(groupInfo.jid, groupInfo)
+                grouperMap.delete(groupInfo.jid)
+            } catch (e) {
+                console.log("Error while trying to update group infos" + e);
+            }
+        })
+    } catch (e) { }
+}
 
+setInterval(backUpGroups, 1000 * 60 * 60 * 2)
 
 
 // Instead, export the handlers along with handleMessages
