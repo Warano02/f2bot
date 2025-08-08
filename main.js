@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep, SAVENEWCONTACTS, LOADCONTACTS } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 
@@ -539,9 +539,17 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
                 console.log(`🔎 Checking if ${number} exists for ${botContact}`);
                 const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
                 if (data?.contact?.length) return
-                await sleep(5000)
+                const settings = LOADSETTINGS()
+                while (Date.now() - global.lastreceivemessage < 20000) {
+                    const wait = 20000 - (Date.now() - global.lastreceivemessage);
+                    console.log(`🕒Forwarding pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+                    await sleep(50000);
+                }
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
+                if (settings.settings.diffusion) {
+                    SAVENEWCONTACTS(jid)
+                }
                 processingAdd.delete(jid)
                 return addQeu.set(jid, { number, jid })
             } catch (e) {
@@ -579,21 +587,24 @@ async function handleAddUserResponse({ reply, m, chatId, settings }) {
  * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
  * @returns void
  */
-async function handleDiffuionContact({ m, markAsRead, settings, reply, sendPrivate }) {
+async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, sendPrivate }) {
     try {
         const privacy = GETPRIVACY()
-        const contact = JSON.parse(fs.readFileSync(path.join(__dirname, "./src/db/contacts.json"), "utf-8"))
-        if (contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
+        const contact = LOADCONTACTS()
+        if (isGroup || contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
         return queue.add(async () => {
             if (diffusionModeContacts.has(m.chat)) return
             diffusionModeContacts.set(m.chat)
-            await sleep(10000)
+            while (Date.now() - global.lastreceivemessage < 20000) {
+                const wait = 20000 - (Date.now() - global.lastreceivemessage);
+                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+                await sleep(10000);
+            }
             const number = m.chat.split("@")[0]
             const kk = parsePhoneNumberFromString(`+${number}`)
             const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
             await saveContact(c, true)
-            contact.push(m.chat)
-            fs.writeFileSync(path.join(__dirname, "./src/db/contacts.json"), JSON.stringify(contact))
+            SAVENEWCONTACTS(contact)
             await reply(privacy.mess.diffusionmode)
             return markAsRead()
         })

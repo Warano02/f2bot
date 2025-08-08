@@ -293,9 +293,9 @@ function parseVcard(vcfData) {
         }
 
         for (const raw of tels) {
-           
+
             const phone = parsePhoneNumberFromString(raw.startsWith("+") ? raw : "+" + raw);
-            
+
             const country = phone?.country || 'Unknown';
             const code = phone?.countryCallingCode ? `+${phone.countryCallingCode}` : 'Unknown';
             const flag = flags.countryCode(country)?.emoji || '';
@@ -416,7 +416,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted.download = async () => await downloadMediaMessage(vM, 'buffer', {}, { reuploadRequest: TaycInc.updateMediaMessage })
 
             // Si VCF
-            const isVcf = quoted?.documentMessage?.mimetype === 'text/x-vcard'||quoted?.documentMessage?.mimetype==='text/vcard'
+            const isVcf = quoted?.documentMessage?.mimetype === 'text/x-vcard' || quoted?.documentMessage?.mimetype === 'text/vcard'
             if (isVcf) {
                 try {
                     const buffer = await downloadMediaMessage(vM, 'buffer', {}, {
@@ -505,6 +505,39 @@ exports.GETPRIVACY = () => {
     }
 }
 
+/**
+ * 
+ * @returns {[string]}
+ */
+exports.LOADCONTACTS = () => {
+    try {
+        const data = JSON.parse(fs.readFileSync(path.join(__dirname, "../db/contacts.json"), "utf-8"))
+        return data
+    } catch (e) {
+        return []
+    }
+}
+
+/**
+ * 
+ * @param {string} contact 
+ * @returns void
+ */
+
+exports.SAVENEWCONTACTS = (contact) => {
+    try {
+        const c = exports.LOADCONTACTS(); 
+        c.push(contact);
+        fs.writeFileSync(
+            path.join(__dirname, "../db/contacts.json"),
+            JSON.stringify(c, null, 2)
+        );
+        console.log(contact, "saved successfully!");
+        return true;
+    } catch {
+        return false;
+    }
+};
 exports.getFolderSizeInMB = (folderPath) => {
     try {
         const files = fs.readdirSync(folderPath);
@@ -522,33 +555,3 @@ exports.getFolderSizeInMB = (folderPath) => {
     }
 };
 
-// exports.isAdmin = async (TaycInc, chatId, senderId) => {
-//     try {
-//         const groupMetadata = await TaycInc.groupMetadata(chatId);
-
-//         const botId = TaycInc.user.id.split(':')[0] + '@s.whatsapp.net';
-
-//         const participant = groupMetadata.participants.find(p =>
-//             p.id === senderId ||
-//             p.id === senderId.replace('@s.whatsapp.net', '@lid') ||
-//             p.id === senderId.replace('@lid', '@s.whatsapp.net')
-//         );
-
-//         const bot = groupMetadata.participants.find(p =>
-//             p.id === botId ||
-//             p.id === botId.replace('@s.whatsapp.net', '@lid')
-//         );
-
-//         const isBotAdmin = bot && (bot.admin === 'admin' || bot.admin === 'superadmin');
-//         const isSenderAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
-
-//         if (!bot) {
-//             return { isSenderAdmin, isBotAdmin: true };
-//         }
-
-//         return { isSenderAdmin, isBotAdmin };
-//     } catch (error) {
-//         console.error('Error in isAdmin:', error);
-//         return { isSenderAdmin: false, isBotAdmin: false };
-//     }
-// }
