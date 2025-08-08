@@ -45,6 +45,17 @@ module.exports = [
         }
     },
     {
+        command: ["adds", "sendaddmess", "sendaddmessage"],
+        desc: "allows you to send a message to all members of a group but who are not in the user's contact list. This can, for example, be useful for broadcasting a message to contacts to ask them to register.",
+        operate: async ({ }) => {
+            if (!isGroup) return reply("❌*This command can only be use in the group*")
+            const status = getForwardStatus();
+            if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
+            const t = m?.groupMetadata.participants.map(e => e.jid)
+            if (!text) return reply("*❌ Please provide the text to forward*")
+        }
+    },
+    {
         command: ["forward", "fw",],
         desc: "Forward message to contacts inside a .vcf (reply to vcf)",
         operate: async ({ Tayc, m, text, reply, FORWARDMESSAGE, cmd, react, getForwardStatus }) => {

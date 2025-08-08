@@ -23,7 +23,7 @@ module.exports = [
         operate: async ({ reply }) => {
             reply(`*Restarting...*`);
             await sleep(3000);
-            process.exit(0);
+            spawn("node", [path.join(__dirname, "../../index.js")], { stdio: "inherit" });
         }
     },
     {
