@@ -59,18 +59,15 @@ module.exports = [
             const status = getForwardStatus();
             if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
             try {
-                react("⌛")
+               await react("⌛")
                 const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
-                react("")
+               await react("")
                 let contacts = data?.contacts
                 contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
-                console.table(contacts)
                 const t = m?.groupMetadata.participants.map(e => e.jid)
-                console.table(t)
                 const tab = t.filter(jid => !contacts.includes(jid))
-                console.table(t)
                 if (!tab.length) return reply("*You already have all the contacts of this group*")
-                await reply(`*🚨 To forward, i'll take ${estimateForwardTime(t.length).human}* to ib this ${t.length} members where you don't have.`)
+                await reply(`*🚨 To forward, i'll take ${estimateForwardTime(tab.length).human}* to ib this ${tab.length} members where you don't have.`)
                 const result = await FORWARDMESSAGE(Tayc, tab, text);
                 if (result?.error) {
                     console.log(result);
