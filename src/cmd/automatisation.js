@@ -53,9 +53,9 @@ module.exports = [
          * @param {import("../db/types.d.ts").BotCommandContext} param0 
          * @returns 
          */
-        operate: async ({ m, Tayc, reply, isGroup, react, getForwardStatus, Settings, estimateForwardTime, FORWARDMESSAGE, text }) => {
+        operate: async ({ m, Tayc, reply, isGroup, react, getForwardStatus, estimateForwardTime, FORWARDMESSAGE, text }) => {
             if (!isGroup) return reply("❌*This command can only be use in the group*")
-
+            if (!text) return reply("*Please provid the text to forward*")
             const status = getForwardStatus();
             if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
             try {
@@ -64,11 +64,14 @@ module.exports = [
                 react("")
                 let contacts = data?.contacts
                 contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
+                console.table(contacts)
                 const t = m?.groupMetadata.participants.map(e => e.jid)
-                const tab = [...(new Set([...contacts, ...t]))]
+                console.table(t)
+                const tab = t.filter(jid => !contacts.includes(jid))
+                console.table(t)
                 if (!tab.length) return reply("*You already have all the contacts of this group*")
                 await reply(`*🚨 To forward, i'll take ${estimateForwardTime(t.length).human}* to ib this ${t.length} members where you don't have.`)
-                const result = await FORWARDMESSAGE(Tayc, tab, text || Settings.mess.addNewContact);
+                const result = await FORWARDMESSAGE(Tayc, tab, text);
                 if (result?.error) {
                     console.log(result);
                     react('❌')
