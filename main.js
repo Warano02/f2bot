@@ -1,10 +1,9 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, addToGlobalHistory } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 
 const { downloadContentFromMessage } = require('@whiskeysockets/baileys');
 
-const TEMP_MEDIA_DIR = path.join(__dirname, './tmp');
 const { writeFile } = require('fs/promises');
 const logMessage = require('./src/lib/statique.js');
 const { getCommands } = require('./src/lib/loader.js');
@@ -23,61 +22,13 @@ const messageStore = new Map();
 const addQeu = new Map()
 const processingAdd = new Map()
 const diffusionModeContacts = new Map()
-const ALL_CHAT_PATH = path.join(__dirname, './src/db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, './src/db/settings.json');
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
 const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
 const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
 
-// Making sure tmp exist 
-if (!fs.existsSync(TEMP_MEDIA_DIR)) {
-    fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
-}
 
-const cleanTempFolderIfLarge = () => {
-    try {
-        const sizeMB = getFolderSizeInMB(TEMP_MEDIA_DIR);
-        if (sizeMB > 100) {
-            const files = fs.readdirSync(TEMP_MEDIA_DIR);
-            for (const file of files) {
-                const filePath = path.join(TEMP_MEDIA_DIR, file);
-                if (fs.statSync(filePath).isFile()) fs.unlinkSync(filePath);
-                else fs.rmSync(filePath, { recursive: true, force: true });
-            }
-        }
-    } catch (err) {
-        console.error('Temp cleanup error:', err);
-    }
-};
-
-setInterval(cleanTempFolderIfLarge, 60 * 1000);
-
-
-function loadAllChats() {
-    try {
-        const raw = fs.readFileSync(ALL_CHAT_PATH, 'utf-8');
-        return JSON.parse(raw);
-    } catch {
-        return {};
-    }
-}
-
-function saveAllChats(data) {
-    fs.writeFileSync(ALL_CHAT_PATH, JSON.stringify(data, null, 2));
-}
-
-function addToGlobalHistory(jid, role, text) {
-    const allChats = loadAllChats();
-    if (!allChats[jid]) allChats[jid] = [];
-    allChats[jid].push({
-        role,
-        text,
-        timestamp: new Date().toISOString()
-    });
-    if (allChats[jid].length > 20) allChats[jid].shift();
-    saveAllChats(allChats);
-}
 /**
  * 
  * @param {object} newSettings 
@@ -805,14 +756,6 @@ async function ScheduledMessages(Tayc) {
     } catch (e) {
         console.log(chalk.redBright("[SCHEDULED]"), chalk.yellowBright("Error in ScheduledMessages:"), e);
     }
-}
-
-// Créer un dossier daté et retourner un chemin
-function getMediaPath(messageId, ext) {
-    const day = new Date().toISOString().slice(0, 10);
-    const dayDir = path.join(TEMP_MEDIA_DIR, day);
-    if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
-    return path.join(dayDir, `${messageId}${ext}`);
 }
 
 

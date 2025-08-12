@@ -20,11 +20,17 @@ const {
     defaultMaxListeners
 } = require('stream')
 const path = require('path')
-const { tmpdir } = require('os')
-const vCard = require('vcf');
+
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
 const flags = require('emoji-flags');
 const unixTimestampSeconds = (date = new Date()) => Math.floor(date.getTime() / 1000)
+const TEMP_MEDIA_DIR = path.join(__dirname, '../../tmp');
+const ALL_CHAT_PATH = path.join(__dirname, '../db/chats.json');
+
+// Making sure tmp exist 
+if (!fs.existsSync(TEMP_MEDIA_DIR)) {
+    fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
+}
 
 exports.unixTimestampSeconds = unixTimestampSeconds
 
@@ -539,7 +545,13 @@ exports.SAVENEWCONTACTS = (contact) => {
         return false;
     }
 };
-exports.getFolderSizeInMB = (folderPath) => {
+
+/**
+ * 
+ * @param {string} folderPath 
+ * @returns number
+ */
+const getFolderSizeInMB = (folderPath) => {
     try {
         const files = fs.readdirSync(folderPath);
         let totalSize = 0;
@@ -555,6 +567,8 @@ exports.getFolderSizeInMB = (folderPath) => {
         return 0;
     }
 };
+
+exports.getFolderSizeInMB = getFolderSizeInMB
 
 /**
  * 
@@ -574,3 +588,76 @@ exports.getPrompt = () => {
         return defaultPrompt;
     }
 }
+
+/**
+ * 
+ * @param {string} messageId 
+ * @param {number} ext 
+ * @returns string
+ */
+function getMediaPath(messageId, ext) {
+    const day = new Date().toISOString().slice(0, 10);
+    const dayDir = path.join(TEMP_MEDIA_DIR, day);
+    if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
+    return path.join(dayDir, `${messageId}${ext}`);
+}
+
+function loadAllChats() {
+    try {
+        const raw = fs.readFileSync(ALL_CHAT_PATH, 'utf-8');
+        return JSON.parse(raw);
+    } catch {
+        return {};
+    }
+}
+
+exports.loadAllChats=loadAllChats
+
+/**
+ * 
+ * @param {Object} data 
+ */
+function saveAllChats(data) {
+    fs.writeFileSync(ALL_CHAT_PATH, JSON.stringify(data, null, 2));
+}
+
+exports.saveAllChats=saveAllChats
+
+/**
+ * 
+ * @param {string} jid 
+ * @param {string} role 
+ * @param {string} text 
+ */
+function addToGlobalHistory(jid, role, text) {
+    const allChats = loadAllChats();
+    if (!allChats[jid]) allChats[jid] = [];
+    allChats[jid].push({
+        role,
+        text,
+        timestamp: new Date().toISOString()
+    });
+    if (allChats[jid].length > 20) allChats[jid].shift();
+    saveAllChats(allChats);
+}
+
+exports.addToGlobalHistory=addToGlobalHistory
+exports.getMediaPath = getMediaPath
+
+const cleanTempFolderIfLarge = () => {
+    try {
+        const sizeMB = getFolderSizeInMB(TEMP_MEDIA_DIR);
+        if (sizeMB > 100) {
+            const files = fs.readdirSync(TEMP_MEDIA_DIR);
+            for (const file of files) {
+                const filePath = path.join(TEMP_MEDIA_DIR, file);
+                if (fs.statSync(filePath).isFile()) fs.unlinkSync(filePath);
+                else fs.rmSync(filePath, { recursive: true, force: true });
+            }
+        }
+    } catch (err) {
+        console.error('Temp cleanup error:', err);
+    }
+};
+
+setInterval(cleanTempFolderIfLarge, 60 * 1000);

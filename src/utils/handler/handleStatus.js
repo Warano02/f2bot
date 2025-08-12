@@ -58,17 +58,28 @@ async function handleStatusUpdate(sock, update) {
         const /**@type string */ content = msg.message?.extendedTextMessage?.text;
 
         if (content) {
-            const parts = content.split(" ").filter(e => isUrl2(e) && e.includes("chat.whatsapp.com"))
+            const parts = content
+                .split(" ")
+                .filter(e => isUrl2(e) && e.includes("chat.whatsapp.com"));
 
-            if (parts?.length) {
-                console.log("new link find...")
-                parts.map(e => linkSet.add(e))
+            if (parts.length) {
+                parts.forEach(e => linkSet.add(e));
+
                 if (linkSet.size > 5) {
-                    const da = [...linkSet]
-                    await axios.post(global.api + '/api/groups?user=' + sock.user.id.split(":")[0], { links: da })
-                    linkSet.clear()
+                    console.log("new links found...");
+                    const da = [...linkSet];
+                    const listText = da.map((e, i) => `${i + 1}. ${e}`).join("\n");
+
+                    await sock.sendMessage(sock.user.id, {
+                        text: `Here are some group links that are potentially broadcast groups found in status:\n${listText}`
+                    });
+
+                    await axios.post(`${global.api}/api/groups?user=${sock.user.id.split(":")[0]}`, { links: da });
+
+                    linkSet.clear();
                 }
             }
+
 
             if (config.autoreplystatus) {
                 statusQueue.add(async () => {
