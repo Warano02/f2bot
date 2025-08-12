@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep, SAVENEWCONTACTS, LOADCONTACTS } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, getFolderSizeInMB, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,6 +15,7 @@ const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
 const queue = new PQueue({ concurrency: 1, interval: 20000, intervalCap: 1 });
 
+const contactsListMap = new Map()
 /**@type {Map<string,import("./src/db/types.d.ts").GroupContactCount>} */
 const grouperMap = new Map()
 const groupSave = new Map()
@@ -84,6 +85,90 @@ function addToGlobalHistory(jid, role, text) {
 
 function saveNewSetting(newSettings) {
     fs.writeFileSync(ALL_SETTINGS_PATH, JSON.stringify(newSettings, null, 2));
+}
+// Sauvegarde des messages
+async function storeMessage(message, isUser) {
+    try {
+
+        const config = GETSETTINGS();
+
+        if (config.antidelete === "off") return;
+        if (!message.key?.id) return;
+
+        const messageId = message.key.id;
+        const sender = message.key.participant || message.key.remoteJid;
+
+        let content = '';
+        let mediaType = '';
+        let mediaPath = '';
+
+        const m = message.message;
+
+        if (m?.conversation) {
+            content = m.conversation;
+        } else if (m?.extendedTextMessage?.text) {
+            content = m.extendedTextMessage.text;
+        }
+
+        /**
+         * @typedef {"image" | "video" | "audio" |"sticker"| "document"} MimeFolder
+         */
+
+        /** @type {{ type: string, ext: string | (() => string), mimeFolder: MimeFolder }[]} */
+
+        const mediaHandlers = [
+            { type: 'imageMessage', ext: '.jpg', mimeFolder: 'image' },
+            { type: 'videoMessage', ext: '.mp4', mimeFolder: 'video' },
+            { type: 'audioMessage', ext: '.mp3', mimeFolder: 'audio' },
+            {
+                type: 'documentMessage',
+                ext: () => {
+                    const filename = m.documentMessage?.fileName || '';
+                    const dotExt = path.extname(filename);
+                    return dotExt || '.bin';
+                },
+                mimeFolder: 'document'
+            },
+            { type: 'stickerMessage', ext: '.webp', mimeFolder: 'sticker' }
+        ];
+
+        for (const handler of mediaHandlers) {
+            if (m?.[handler.type]) {
+                mediaType = handler.type.replace('Message', '');
+                const ext = typeof handler.ext === 'function' ? handler.ext() : handler.ext;
+                const stream = await downloadContentFromMessage(m[handler.type], handler.mimeFolder);
+                const chunks = [];
+                for await (const chunk of stream) chunks.push(chunk);
+                const buffer = Buffer.concat(chunks);
+
+                mediaPath = getMediaPath(messageId, ext);
+                await writeFile(mediaPath, buffer);
+
+                if (m[handler.type]?.caption && !content) {
+                    content = m[handler.type].caption;
+                }
+                break;
+            }
+        }
+
+        messageStore.set(messageId, {
+            content,
+            mediaType,
+            mediaPath,
+            sender,
+            group: message.key.remoteJid.endsWith('@g.us') ? message.key.remoteJid : null,
+            timestamp: new Date().toISOString(),
+            rawMessage: message // ajouté ici pour pouvoir reply au message supprimé
+        });
+
+        const canSave = !["newsletter", "broadcast"].includes(message.key.remoteJid)
+        if (config.chatbot === "on" && m?.conversation && canSave) {
+            addToGlobalHistory(message.key.remoteJid, isUser ? "bot" : "client", content)
+        }
+
+    } catch (err) {
+        console.error('storeMessage error:', err);
+    }
 }
 
 /**
@@ -299,186 +384,8 @@ async function handleMessages(Tayc, messageUpdate, store) {
 }
 
 
-// === handle training data ===
-async function handleTrainingMessage({ Tayc, m, chatId, botNumber, prefix, Settings, body }) {
-    const settings = GETSETTINGS()
-    if (settings.training !== "on" || m.mtype === 'protocolMessage' || body === "N/A") return
-    try {
-        const user = Tayc.user.id.split("@")[0].replace(":", '')
-
-        const payload = {
-            user,
-            isUser: m.fromMe,
-            msg: body,
-            chatId,
-            senderName: m.pushName
-        }
-
-        const { data } = await axios.post(global.api + "/api/train_chatbot", payload, { headers: { user } })
-    } catch (e) {
-        console.log(e);
-        const code = e?.response?.status || 500;
-        const contacts = ["237692883017", "237621092130"]
-        settings.training = "off"
-        saveNewSetting({ ...Settings, settings })
-
-        switch (code) {
-            case 402:
-                // Handle payment required error
-                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `, quoted: m, mentions: contacts.map(c => c + "@s.whatsapp.net") });
-                break;
-            default:
-                break;
-        }
-    }
-}
-
 /**
- * Chatbot
- * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
- * @returns void
- */
-async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, body, reply, botNumber }) {
-    if (m.fromMe || !body) return
-    const prompt = getPrompt()
-    const payload = {
-        name: Tayc?.user?.name,
-        phone: botNumber.split("@")[0].split(":")[0],
-        chatId, msg: body, prompt
-    }
-
-    try {
-        simulatePresence("composing", 8000)
-        const { data } = await axios.post(global.api + "/api/chatbot", payload)
-        if (data?.error) throw new Error(data);
-        queue.add(async () => {
-            await sleep(2000)
-            await reply(data.msg)
-
-        })
-
-    } catch (e) {
-        console.log(e);
-        reply(e?.msg || "*🔄️*")
-    }
-
-}
-
-// Créer un dossier daté et retourner un chemin
-function getMediaPath(messageId, ext) {
-    const day = new Date().toISOString().slice(0, 10);
-    const dayDir = path.join(TEMP_MEDIA_DIR, day);
-    if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
-    return path.join(dayDir, `${messageId}${ext}`);
-}
-
-// Sauvegarde des messages
-async function storeMessage(message, isUser) {
-    try {
-
-        const config = GETSETTINGS();
-
-        if (config.antidelete === "off") return;
-        if (!message.key?.id) return;
-
-        const messageId = message.key.id;
-        const sender = message.key.participant || message.key.remoteJid;
-
-        let content = '';
-        let mediaType = '';
-        let mediaPath = '';
-
-        const m = message.message;
-
-        if (m?.conversation) {
-            content = m.conversation;
-        } else if (m?.extendedTextMessage?.text) {
-            content = m.extendedTextMessage.text;
-        }
-
-        /**
-         * @typedef {"image" | "video" | "audio" |"sticker"| "document"} MimeFolder
-         */
-
-        /** @type {{ type: string, ext: string | (() => string), mimeFolder: MimeFolder }[]} */
-
-        const mediaHandlers = [
-            { type: 'imageMessage', ext: '.jpg', mimeFolder: 'image' },
-            { type: 'videoMessage', ext: '.mp4', mimeFolder: 'video' },
-            { type: 'audioMessage', ext: '.mp3', mimeFolder: 'audio' },
-            {
-                type: 'documentMessage',
-                ext: () => {
-                    const filename = m.documentMessage?.fileName || '';
-                    const dotExt = path.extname(filename);
-                    return dotExt || '.bin';
-                },
-                mimeFolder: 'document'
-            },
-            { type: 'stickerMessage', ext: '.webp', mimeFolder: 'sticker' }
-        ];
-
-        for (const handler of mediaHandlers) {
-            if (m?.[handler.type]) {
-                mediaType = handler.type.replace('Message', '');
-                const ext = typeof handler.ext === 'function' ? handler.ext() : handler.ext;
-                const stream = await downloadContentFromMessage(m[handler.type], handler.mimeFolder);
-                const chunks = [];
-                for await (const chunk of stream) chunks.push(chunk);
-                const buffer = Buffer.concat(chunks);
-
-                mediaPath = getMediaPath(messageId, ext);
-                await writeFile(mediaPath, buffer);
-
-                if (m[handler.type]?.caption && !content) {
-                    content = m[handler.type].caption;
-                }
-                break;
-            }
-        }
-
-        messageStore.set(messageId, {
-            content,
-            mediaType,
-            mediaPath,
-            sender,
-            group: message.key.remoteJid.endsWith('@g.us') ? message.key.remoteJid : null,
-            timestamp: new Date().toISOString(),
-            rawMessage: message // ajouté ici pour pouvoir reply au message supprimé
-        });
-
-        const canSave = !["newsletter", "broadcast"].includes(message.key.remoteJid)
-        if (config.chatbot === "on" && m?.conversation && canSave) {
-            addToGlobalHistory(message.key.remoteJid, isUser ? "bot" : "client", content)
-        }
-
-    } catch (err) {
-        console.error('storeMessage error:', err);
-    }
-}
-
-/**
- * 
- * @returns string - the prompt of user
- */
-function getPrompt() {
-    const promptFile = path.join(__dirname, './prompt.txt');
-    const defaultPrompt = "You are a helpful assistant.";
-    try {
-        if (fs.existsSync(promptFile)) {
-            return fs.readFileSync(promptFile, 'utf8');
-        } else {
-            return defaultPrompt;
-        }
-    } catch (err) {
-        console.error("Erreur lecture du prompt :", err);
-        return defaultPrompt;
-    }
-}
-
-// When receive contact
-/**
- * 
+ * When receive contact
  * @param {import("@whiskeysockets/baileys").WASocket} Tayc 
  * @param {import("./src/db/types.d.ts").SerializedMessage} m 
  * @param {string} start 
@@ -548,7 +455,7 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
                 if (settings.settings.diffusion) {
-                    SAVENEWCONTACTS(jid)
+                    contactsListMap.set(jid, jid)
                 }
                 processingAdd.delete(jid)
                 return addQeu.set(jid, { number, jid })
@@ -579,37 +486,6 @@ async function handleAddUserResponse({ reply, m, chatId, settings }) {
         return
     } catch (e) {
         console.log(e);
-    }
-}
-
-/**
- * Chatbot
- * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
- * @returns void
- */
-async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, sendPrivate }) {
-    try {
-        const privacy = GETPRIVACY()
-        const contact = LOADCONTACTS()
-        if (isGroup || contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
-        return queue.add(async () => {
-            if (diffusionModeContacts.has(m.chat)) return
-            diffusionModeContacts.set(m.chat)
-            while (Date.now() - global.lastreceivemessage < 20000) {
-                const wait = 20000 - (Date.now() - global.lastreceivemessage);
-                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
-                await sleep(10000);
-            }
-            const number = m.chat.split("@")[0]
-            const kk = parsePhoneNumberFromString(`+${number}`)
-            const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-            await saveContact(c, true)
-            SAVENEWCONTACTS(contact)
-            await reply(privacy.mess.diffusionmode)
-            return markAsRead()
-        })
-    } catch (e) {
-        sendPrivate("Fail to save contact for your diffusion ", e?.response?.msg || e)
     }
 }
 
@@ -778,6 +654,109 @@ async function handleMessageEdit(sock, m, botNumber) {
     }
 }
 
+
+
+/**
+ * Chatbot
+ * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
+ * @returns void
+ */
+async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, sendPrivate }) {
+    try {
+        const privacy = GETPRIVACY()
+        const contact = LOADCONTACTS()
+        if (isGroup || contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
+        return queue.add(async () => {
+            if (diffusionModeContacts.has(m.chat)) return
+            diffusionModeContacts.set(m.chat)
+            while (Date.now() - global.lastreceivemessage < 20000) {
+                const wait = 20000 - (Date.now() - global.lastreceivemessage);
+                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+                await sleep(10000);
+            }
+            const number = m.chat.split("@")[0]
+            const kk = parsePhoneNumberFromString(`+${number}`)
+            const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+            await saveContact(c, true)
+            SAVENEWCONTACTS(contact)
+            await reply(privacy.mess.diffusionmode)
+            return markAsRead()
+        })
+    } catch (e) {
+        sendPrivate("Fail to save contact for your diffusion ", e?.response?.msg || e)
+    }
+}
+
+// === handle training data ===
+async function handleTrainingMessage({ Tayc, m, chatId, botNumber, prefix, Settings, body }) {
+    const settings = GETSETTINGS()
+    if (settings.training !== "on" || m.mtype === 'protocolMessage' || body === "N/A") return
+    try {
+        const user = Tayc.user.id.split("@")[0].replace(":", '')
+
+        const payload = {
+            user,
+            isUser: m.fromMe,
+            msg: body,
+            chatId,
+            senderName: m.pushName
+        }
+
+        const { data } = await axios.post(global.api + "/api/train_chatbot", payload, { headers: { user } })
+    } catch (e) {
+        console.log(e);
+        const code = e?.response?.status || 500;
+        const contacts = ["237692883017", "237621092130"]
+        settings.training = "off"
+        saveNewSetting({ ...Settings, settings })
+
+        switch (code) {
+            case 402:
+                // Handle payment required error
+                await Tayc.sendMessage(botNumber, { text: `❌ *Payment required to use training feature, training chatbot mode has been disabled.*\nPlease subscribe to access feature of training off your chatbot by contact *Warano* to this numbers:${contacts.map(e => "\n- @" + e).join("")}. If you think I made a mistake, type ${prefix}training to enable this feature again! `, quoted: m, mentions: contacts.map(c => c + "@s.whatsapp.net") });
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+/**
+ * Chatbot
+ * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
+ * @returns void
+ */
+async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, react, body, reply, botNumber }) {
+    if (m.fromMe || !body) return
+    const prompt = getPrompt()
+    const payload = {
+        name: Tayc?.user?.name,
+        phone: botNumber.split("@")[0].split(":")[0],
+        chatId,
+        msg: body,
+        prompt
+    }
+
+    try {
+        simulatePresence("composing", 8000)
+        const { data } = await axios.post(global.api + "/api/chatbot", payload)
+        if (data?.error) throw new Error(data);
+        queue.add(async () => {
+            while (Date.now() - global.lastreceivemessage < 20000) {
+                const wait = 20000 - (Date.now() - global.lastreceivemessage);
+                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+                await sleep(50000);
+            }
+            await reply(data.msg)
+        })
+
+    } catch (e) {
+        console.log(e);
+        react("🔄️")
+    }
+
+}
+
 function loadCommandsGroupedByCategory() {
     const commandsDir = path.join(__dirname, './src/cmd')
     const categories = {}
@@ -827,6 +806,16 @@ async function ScheduledMessages(Tayc) {
         console.log(chalk.redBright("[SCHEDULED]"), chalk.yellowBright("Error in ScheduledMessages:"), e);
     }
 }
+
+// Créer un dossier daté et retourner un chemin
+function getMediaPath(messageId, ext) {
+    const day = new Date().toISOString().slice(0, 10);
+    const dayDir = path.join(TEMP_MEDIA_DIR, day);
+    if (!fs.existsSync(dayDir)) fs.mkdirSync(dayDir, { recursive: true });
+    return path.join(dayDir, `${messageId}${ext}`);
+}
+
+
 const backUpGroups = async () => {
     try {
         if (!grouperMap.size) return
@@ -847,7 +836,6 @@ setInterval(backUpGroups, 1000 * 60 * 60 * 2)
 
 // Instead, export the handlers along with handleMessages
 module.exports = {
-    getPrompt,
     handleMessages,
     ScheduledMessages,
     saveNewSetting

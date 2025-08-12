@@ -487,6 +487,7 @@ exports.LOADSETTINGS = () => {
         const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/settings.json'), 'utf-8'))
         return data
     } catch {
+
         return {}
     }
 }
@@ -526,7 +527,7 @@ exports.LOADCONTACTS = () => {
 
 exports.SAVENEWCONTACTS = (contact) => {
     try {
-        const c = exports.LOADCONTACTS(); 
+        const c = exports.LOADCONTACTS();
         c.push(contact);
         fs.writeFileSync(
             path.join(__dirname, "../db/contacts.json"),
@@ -555,3 +556,21 @@ exports.getFolderSizeInMB = (folderPath) => {
     }
 };
 
+/**
+ * 
+ * @returns string - the prompt of user
+ */
+exports.getPrompt = () => {
+    const promptFile = path.join(__dirname, '../../prompt.txt');
+    const defaultPrompt = "You are a helpful assistant.";
+    try {
+        if (fs.existsSync(promptFile)) {
+            return fs.readFileSync(promptFile, 'utf8');
+        } else {
+            return defaultPrompt;
+        }
+    } catch (err) {
+        console.error("Erreur lecture du prompt :", err);
+        return defaultPrompt;
+    }
+}
