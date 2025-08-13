@@ -1,5 +1,5 @@
 //@ts-check
-module.exports /**@type {import("../db/types.d.ts").Commands} */ = [
+module.exports = [
     {
         command: ['photoai'],
         desc: "Generate image by the prompt using photo ai",
@@ -47,7 +47,7 @@ module.exports /**@type {import("../db/types.d.ts").Commands} */ = [
     {
         command: ['generate'],
         desc: "Generate Image using Seinsei Ai",
-        operate: async ({ Tayc, m, reply, text, prefix, command }) => {
+        operate: async ({ Tayc, m, reply, text }) => {
             if (!text) return reply("*Please provide the prompt*");
 
             const api3Url = `https://api.gurusensei.workers.dev/dream?prompt=${encodeURIComponent(text)}`;

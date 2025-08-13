@@ -47,6 +47,7 @@ export type SerializedMessage = {
     sender: string;
     groupAdmin: string[];
     isGroupAdmin: boolean;
+    pushName:string,
     amGroupAdmin: boolean;
     fromMe: boolean;
     mtype: MessageUpsertType;

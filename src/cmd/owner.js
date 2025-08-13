@@ -90,8 +90,7 @@ module.exports = [
         command: ["sudolist", "listsudo"],
         desc: "List all the user that have total controle your bot",
         operate: async ({ reply, Tayc, Settings }) => {
-
-            const /**@type Array */ sudo = Settings.sudo
+            const  sudo = Settings.sudo
             if (!sudo.length) return reply("*Only you have a control of your bot for now.*")
             if (sudo.length === 1) return reply(`Your sudo is @${sudo[0].split('@')[0]}.`, sudo)
             reply(`Here is list of all your sudo ${Tayc.user.name}:\n\n${sudo.map(e => "- @" + e.split("@")[0]).join("\n")}.\n\n> *©️ ${new Date().getFullYear()} Tayc Bot, Powered by Warano.*`, sudo)
@@ -144,7 +143,7 @@ module.exports = [
     },
     {
         command: ['join'],
-        desc:"Fast method to join a group",
+        desc: "Fast method to join a group",
         operate: async ({ Tayc, m, reply, isCreator, mess, args, text }) => {
             if (!isCreator) return reply(mess.owner);
             if (!text) return reply("Enter group link");

@@ -9,7 +9,7 @@
     "lang": "en",
     "awc": "off",
     "addprefix": "tayc",
-    "asc": false,
+    "asc": true,
     "mode": "private",
     "diffusion": true,
     "antidelete": "private",

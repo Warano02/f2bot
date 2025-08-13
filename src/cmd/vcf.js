@@ -1,21 +1,22 @@
+const axios = require("axios");
 const VCFUTILS = require("../utils/spec/vcf");
 
 module.exports = [
     {
-        command:["test"],
-        desc:"",
-          /**
-         * 
-         * @param {import('../db/types.d.ts').BotCommandContext} param0 
-         */
-        operate:async ({Tayc,store}) => {
+        command: ["test"],
+        desc: "",
+        /**
+       * 
+       * @param {import('../db/types.d.ts').BotCommandContext} param0 
+       */
+        operate: async ({ Tayc, store }) => {
             try {
-                const cc=store.contacts
+                const cc = store.contacts
                 console.log(cc);
-                
+
             } catch (e) {
                 console.log(e);
-                
+
             }
         }
     }
@@ -96,6 +97,39 @@ module.exports = [
                 },
                 { quoted: m, ephemeralExpiration: 86400 }
             );
+        }
+    },
+    {
+        command: ["filternew", "filternewcontacts", "fnc"],
+        desc: "Allows you to sort the contacts in a vcf file and return only those that the user does not have",
+        /**
+         * 
+         * @param {import("../db/types.d.ts").BotCommandContext} param0 
+         */
+        operate: async ({ reply, settings, react, m, cmd, prefix, Tayc }) => {
+            if (!settings.asc) return reply(`Please enable *auto save contact* first by typing ${prefix}asc on then try again ! `)
+            if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
+            if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
+            try {
+                react("⌛")
+                const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
+                const /**@type [string] */ oldContacts = data?.contacts.map(e => e.number)
+                const c = m.quoted.vcf
+                const new_contacts = c.filter(el => !oldContacts.includes(el.number))
+                if (!new_contacts.length) return reply(`🖖 Nice you already have all of this contacts !`)
+                const _ = new VCFUTILS(new_contacts)
+                await Tayc.sendMessage(
+                    m.chat,
+                    {
+                        document: _.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅ *New contact(s)*: ${new_contacts.length}\n> This file had ${m.quoted.vcf.length} contacts`,
+                    },
+                    { quoted: m, ephemeralExpiration: 86400 }
+                );
+                react("")
+            } catch (e) {
+                console.log(e);
+                react("❌")
+            }
         }
     }
 ];
