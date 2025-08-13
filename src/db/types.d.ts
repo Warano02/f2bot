@@ -1,4 +1,4 @@
-import type { MessageUpsertType, GroupMetadata } from "@whiskeysockets/baileys";
+import type { MessageUpsertType, GroupMetadata, MessageUserReceiptUpdate } from "@whiskeysockets/baileys";
 
 export type Command = {
     /** Names or alias of the commands */
@@ -52,9 +52,10 @@ export type SerializedMessage = {
     mtype: MessageUpsertType;
     body: string;
     contacts: Contacts;
+    message: MessageUserReceiptUpdate,
     mentionedJid: string[];
     quoted: QuotedMessage;
-};
+} & MessageUserReceiptUpdate;
 export type Settings = {
     prefix: string;
     chatbot: "on" | "off";
@@ -72,14 +73,14 @@ export type Settings = {
     autoviewstatus: boolean;
     autoreactstatus: boolean;
     autoreplystatus: boolean;
-    diffusion:boolean;
+    diffusion: boolean;
     statusemojis: string;
 };
 
 export type Privacy = {
     mess: {
         addNewContact: string;
-        diffusionmode:string;
+        diffusionmode: string;
     };
     statusblacklist: string[];
     sudo: string[]; // JIDs des admins
@@ -134,7 +135,7 @@ export type BotCommandContext = {
     Settings: BotSettings;
     saveNewSetting: () => void;
     full: string;
-    body:string;
+    body: string;
     cmd: string;
     raw: proto.IWebMessageInfo;
 };
@@ -143,7 +144,7 @@ export type GroupContactCount = {
     name: string,
     id: string,
     count: number,
-    size:number,
-    jid:string
+    size: number,
+    jid: string
 }
 export type Types = { SerializedMessage: SerializedMessage, }

@@ -26,6 +26,7 @@ const flags = require('emoji-flags');
 const unixTimestampSeconds = (date = new Date()) => Math.floor(date.getTime() / 1000)
 const TEMP_MEDIA_DIR = path.join(__dirname, '../../tmp');
 const ALL_CHAT_PATH = path.join(__dirname, '../db/chats.json');
+const ALL_SETTINGS_PATH = path.join(__dirname, '../db/settings.json');
 
 // Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
@@ -592,7 +593,7 @@ exports.getPrompt = () => {
 /**
  * 
  * @param {string} messageId 
- * @param {number} ext 
+ * @param {string} ext 
  * @returns string
  */
 function getMediaPath(messageId, ext) {
@@ -611,7 +612,7 @@ function loadAllChats() {
     }
 }
 
-exports.loadAllChats=loadAllChats
+exports.loadAllChats = loadAllChats
 
 /**
  * 
@@ -621,7 +622,15 @@ function saveAllChats(data) {
     fs.writeFileSync(ALL_CHAT_PATH, JSON.stringify(data, null, 2));
 }
 
-exports.saveAllChats=saveAllChats
+exports.saveAllChats = saveAllChats
+
+/**
+ * 
+ * @param {object} newSettings 
+ */
+exports.saveNewSetting = (newSettings) => {
+    fs.writeFileSync(ALL_SETTINGS_PATH, JSON.stringify(newSettings, null, 2));
+}
 
 /**
  * 
@@ -641,7 +650,7 @@ function addToGlobalHistory(jid, role, text) {
     saveAllChats(allChats);
 }
 
-exports.addToGlobalHistory=addToGlobalHistory
+exports.addToGlobalHistory = addToGlobalHistory
 exports.getMediaPath = getMediaPath
 
 const cleanTempFolderIfLarge = () => {
