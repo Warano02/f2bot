@@ -355,16 +355,20 @@ async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, 
         return queue.add(async () => {
             if (diffusionModeContacts.has(m.chat)) return
             diffusionModeContacts.set(m.chat)
-            while (Date.now() - global.lastreceivemessage < 20000) {
+           
+            const number = m.chat.split("@")[0]
+            const kk = parsePhoneNumberFromString(`+${number}`)
+            const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
+         
+            await saveContact(c, true)
+            SAVENEWCONTACTS(contact)
+
+             while (Date.now() - global.lastreceivemessage < 20000) {
                 const wait = 20000 - (Date.now() - global.lastreceivemessage);
                 console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
                 await sleep(10000);
             }
-            const number = m.chat.split("@")[0]
-            const kk = parsePhoneNumberFromString(`+${number}`)
-            const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-            await saveContact(c, true)
-            SAVENEWCONTACTS(contact)
+
             await reply(privacy.mess.diffusionmode)
             return markAsRead()
         })

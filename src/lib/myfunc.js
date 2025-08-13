@@ -16,9 +16,6 @@ const {
 } = require('human-readable')
 const util = require('util')
 const Jimp = require('jimp')
-const {
-    defaultMaxListeners
-} = require('stream')
 const path = require('path')
 
 const { parsePhoneNumberFromString } = require('libphonenumber-js');
@@ -27,8 +24,8 @@ const unixTimestampSeconds = (date = new Date()) => Math.floor(date.getTime() / 
 const TEMP_MEDIA_DIR = path.join(__dirname, '../../tmp');
 const ALL_CHAT_PATH = path.join(__dirname, '../db/chats.json');
 const ALL_SETTINGS_PATH = path.join(__dirname, '../db/settings.json');
+const ContactsList = new Set()
 
-// Making sure tmp exist 
 if (!fs.existsSync(TEMP_MEDIA_DIR)) {
     fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
 }
@@ -329,7 +326,6 @@ exports.smsg = async (TaycInc, m, store) => {
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
-        // console.log(m.key);
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
         m.chat = m.key.remoteJid
@@ -352,8 +348,7 @@ exports.smsg = async (TaycInc, m, store) => {
     if (m.message) {
         m.mtype = getContentType(m.message)
         const content = m.message?.[m.mtype]
-
-        if (m.mtype === 'viewOnceMessage') {
+        if (["viewOnceMessage", "viewOnceMessageV2", "viewOnceMessageV2Extension"].includes(m.mtype)) {
             const inner = content?.message
             const innerType = inner && Object.keys(inner)[0]
             m.msg = inner?.[innerType] || {}
@@ -373,7 +368,7 @@ exports.smsg = async (TaycInc, m, store) => {
             (m.mtype === 'listResponseMessage' && m.msg.singleSelectReply?.selectedRowId) ||
             (['contactMessage', 'contactsArrayMessage'].includes(m.mtype) && 'contact message') ||
             (m.mtype === 'buttonsResponseMessage' && m.msg.selectedButtonId) ||
-            (m.mtype === 'viewOnceMessage' && m.msg.caption) ||
+            (["viewOnceMessage", "viewOnceMessageV2", "viewOnceMessageV2Extension"].includes(m.mtype) && m.msg.caption) ||
             (['imageMessage', 'videoMessage', 'audioMessage', 'stickerMessage', 'documentMessage'].includes(m.mtype) && 'media message') ||
             (m.mtype === 'protocolMessage' && 'N/A') ||
             'N/A'
@@ -422,8 +417,9 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted.copyNForward = (jid, forceForward = false, options = {}) => TaycInc.copyNForward(jid, vM, forceForward, options)
             m.quoted.download = async () => await downloadMediaMessage(vM, 'buffer', {}, { reuploadRequest: TaycInc.updateMediaMessage })
 
-            // Si VCF
-            const isVcf = quoted?.documentMessage?.mimetype === 'text/x-vcard' || quoted?.documentMessage?.mimetype === 'text/vcard'
+            const mimetype = quoted?.documentMessage?.mimetype?.toLowerCase() || '';
+            const isVcf = mimetype.includes('vcard');
+
             if (isVcf) {
                 try {
                     const buffer = await downloadMediaMessage(vM, 'buffer', {}, {
@@ -517,14 +513,7 @@ exports.GETPRIVACY = () => {
  * 
  * @returns {[string]}
  */
-exports.LOADCONTACTS = () => {
-    try {
-        const data = JSON.parse(fs.readFileSync(path.join(__dirname, "../db/contacts.json"), "utf-8"))
-        return data
-    } catch (e) {
-        return []
-    }
-}
+exports.LOADCONTACTS = () => { return [...ContactsList] }
 
 /**
  * 
@@ -533,18 +522,8 @@ exports.LOADCONTACTS = () => {
  */
 
 exports.SAVENEWCONTACTS = (contact) => {
-    try {
-        const c = exports.LOADCONTACTS();
-        c.push(contact);
-        fs.writeFileSync(
-            path.join(__dirname, "../db/contacts.json"),
-            JSON.stringify(c, null, 2)
-        );
-        console.log(contact, "saved successfully!");
-        return true;
-    } catch {
-        return false;
-    }
+    ContactsList.add(contact)
+    console.log(contact, "save successfully !");
 };
 
 /**
