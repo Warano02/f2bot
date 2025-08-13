@@ -11,7 +11,7 @@
     "addprefix": "tayc",
     "asc": false,
     "mode": "private",
-    "diffusion": false,
+    "diffusion": true,
     "antidelete": "private",
     "antiedite": "private",
     "autoviewstatus": true,

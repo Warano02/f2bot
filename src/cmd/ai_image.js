@@ -1,5 +1,5 @@
 //@ts-check
-module.exports = [
+module.exports /**@type {import("../db/types.d.ts").Commands} */ = [
     {
         command: ['photoai'],
         desc: "Generate image by the prompt using photo ai",

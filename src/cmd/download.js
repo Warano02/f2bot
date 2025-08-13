@@ -119,6 +119,7 @@ module.exports = [
     },
     {
         command: ['gdrive'],
+        desc:"Download files from a google drive",
         operate: async ({ Tayc, m, reply, text }) => {
             if (!text) return reply("*Please provide a Google Drive file URL*");
 
@@ -164,6 +165,7 @@ module.exports = [
     },
     {
         command: ['gitclone'],
+        desc:"Download files from a GitHub repository",
         operate: async ({ m, args, prefix, command, Tayc, reply, mess, }) => {
             if (!args[0])
                 return reply(`*GitHub link to clone?*\nExample :\n${prefix}${command} https://github.com/warano02/Tayc`);
