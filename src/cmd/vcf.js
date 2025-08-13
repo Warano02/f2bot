@@ -102,10 +102,6 @@ module.exports = [
     {
         command: ["filternew", "filternewcontacts", "fnc"],
         desc: "Allows you to sort the contacts in a vcf file and return only those that the user does not have",
-        /**
-         * 
-         * @param {import("../db/types.d.ts").BotCommandContext} param0 
-         */
         operate: async ({ reply, settings, react, m, cmd, prefix, Tayc }) => {
             if (!settings.asc) return reply(`Please enable *auto save contact* first by typing ${prefix}asc on then try again ! `)
             if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);

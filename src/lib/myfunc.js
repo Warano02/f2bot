@@ -513,7 +513,7 @@ exports.GETPRIVACY = () => {
  * 
  * @returns {[string]}
  */
-exports.LOADCONTACTS = () => { return [...ContactsList] }
+exports.LOADCONTACTS = () => Array.from(ContactsList, e => e + "@s.whatsapp.net");
 
 /**
  * 
@@ -525,6 +525,25 @@ exports.SAVENEWCONTACTS = (contact) => {
     ContactsList.add(contact)
     console.log(contact, "save successfully !");
 };
+
+exports.SETCONTACTSLIST = async () => {
+    try {
+        const { data } = await axios.get(`${global.api}/google/contacts/list?token=${global.contact_key}`);
+        const contacts = data?.contacts || [];
+        contacts.forEach(c => {
+            if (c.number) ContactsList.add(c.number.replace(/[\s+-]/g, "")); 
+        });
+        console.log(`${ContactsList.size} contacts loaded successfully!`);
+        return true;
+    } catch (e) {
+        console.error("Failed to load contacts:", e);
+        const s = exports.LOADSETTINGS();
+        s.settings.diffusion = false;
+        exports.saveNewSetting(s);
+        return false;
+    }
+};
+
 
 /**
  * 

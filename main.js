@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, saveNewSetting,loadCommandsGroupedByCategory } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, saveNewSetting, loadCommandsGroupedByCategory } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 const logMessage = require('./src/lib/statique.js');
@@ -355,15 +355,15 @@ async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, 
         return queue.add(async () => {
             if (diffusionModeContacts.has(m.chat)) return
             diffusionModeContacts.set(m.chat)
-           
+
             const number = m.chat.split("@")[0]
             const kk = parsePhoneNumberFromString(`+${number}`)
             const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
-         
-            await saveContact(c, true)
-            SAVENEWCONTACTS(contact)
 
-             while (Date.now() - global.lastreceivemessage < 20000) {
+            await saveContact(c, true)
+            SAVENEWCONTACTS(m.chat.split("@")[0])
+
+            while (Date.now() - global.lastreceivemessage < 20000) {
                 const wait = 20000 - (Date.now() - global.lastreceivemessage);
                 console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
                 await sleep(10000);

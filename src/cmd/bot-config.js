@@ -1,7 +1,7 @@
 const fsp = require('fs/promises')
 const { spawn } = require('child_process');
 const axios = require('axios');
-const { sleep } = require('../lib/myfunc');
+const { sleep, SETCONTACTSLIST } = require('../lib/myfunc');
 const path = require("path")
 
 module.exports = [
@@ -212,25 +212,16 @@ module.exports = [
             if (!text) return reply(`❌*Provide the argument*\n> ${cmd} on or off`)
             if (!["on", "off"].includes(text)) return reply("❌*Invalid argument.* You need to provide 'on' or 'off'")
             const task = text === "off"
-            const ctsp = path.join(__dirname, "../db/contacts.json")
 
             if (!task) {
-                try {
-                    react("⌛")
-                    const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
-                    let /**@type [{name,number}] */ contacts = data?.contacts
-                    contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
-                    fsp.writeFile(ctsp, JSON.stringify(contacts))
-                } catch (e) {
-                    console.log(e);
-                    return reply(`❌ *You can't enable auto save contact*. \n*Error Message*: ${e?.response?.data?.msg || ""}. \n\n> Contact your deployeur to know more about this error.`)
-                }
-            } else {
-                fsp.writeFile(ctsp, JSON.stringify([]))
+                const test = await SETCONTACTSLIST()
+                if (!test) return reply(`❌*Fail to enable diffusion mode*. Please try again !`)
             }
+
             Settings.settings.diffusion = text === "on" ? true : false
+            Settings.settings.awc = "off"
             saveNewSetting({ ...Settings })
-            return reply(`✅ *Auto save contact for diffusion ${task ? "disable" : "enable"} successfully ${task ? 'contacts list has been clear' : ""}.*`)
+            return reply(`✅ *Auto save contact for diffusion ${task ? "disable" : "enable"} successfully ${task ? 'contacts list has been clear' : ""}.*\n> For added security against spam, *auto write contact has been disabled*`)
         }
     },
     {
