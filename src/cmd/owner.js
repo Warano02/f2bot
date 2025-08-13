@@ -2,7 +2,7 @@ const { default: axios } = require("axios");
 const { clearTmpDirectory } = require("../lib/myfunc2");
 const fs = require("fs")
 const path = require("path");
-const { isUrl } = require("../lib/myfunc");
+const { isUrl, sleep } = require("../lib/myfunc");
 module.exports = [
     {
         command: ["cleartmp", "cleantmp", "clstmp"],
@@ -26,21 +26,6 @@ module.exports = [
                 react("")
             } catch (e) {
                 if (e?.response?.status === 404) reply(`*🫣Hey boss ${Tayc.user.name}, i have not send add message for now*`)
-            }
-        }
-    },
-    {
-        command: ["clearcontact", "clsc"],
-        desc: "Reset the contact list used for adding",
-        operate: async ({ reply }) => {
-            const filePath = path.join(__dirname, "../db/contacts.json");
-
-            try {
-                fs.writeFileSync(filePath, JSON.stringify([]));
-                reply("✅ *Your contact list has been successfully cleared.*");
-            } catch (error) {
-                console.error("Failed to clear contacts:", error);
-                reply("❌ *An error occurred while clearing your contact list. Please try again later.*");
             }
         }
     },
