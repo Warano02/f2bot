@@ -653,6 +653,22 @@ function addToGlobalHistory(jid, role, text) {
 exports.addToGlobalHistory = addToGlobalHistory
 exports.getMediaPath = getMediaPath
 
+exports.loadCommandsGroupedByCategory = () => {
+    const commandsDir = path.join(__dirname, '../cmd')
+    const categories = {}
+
+    fs.readdirSync(commandsDir).forEach(file => {
+        const category = path.basename(file, '.js')
+        const commands = require(path.join(commandsDir, file))
+
+        if (Array.isArray(commands)) {
+            categories[category] = commands
+        }
+    })
+
+    return categories
+}
+
 const cleanTempFolderIfLarge = () => {
     try {
         const sizeMB = getFolderSizeInMB(TEMP_MEDIA_DIR);

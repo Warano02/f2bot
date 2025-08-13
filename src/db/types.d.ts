@@ -56,6 +56,7 @@ export type SerializedMessage = {
     mentionedJid: string[];
     quoted: QuotedMessage;
 } & MessageUserReceiptUpdate;
+
 export type Settings = {
     prefix: string;
     chatbot: "on" | "off";

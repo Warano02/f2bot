@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, saveNewSetting,loadCommandsGroupedByCategory } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 const logMessage = require('./src/lib/statique.js');
@@ -9,7 +9,6 @@ const axios = require('axios');
 const { saveContact } = require('./src/utils/spec/contacts.js');
 const PQueue = require("p-queue").default;
 const queue = new PQueue({ concurrency: 1, interval: 20000, intervalCap: 1 });
-
 const contactsListMap = new Map()
 /**@type {Map<string,import("./src/db/types.d.ts").GroupContactCount>} */
 const grouperMap = new Map()
@@ -23,9 +22,6 @@ const flags = require('emoji-flags');
 const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
 const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
 const { handleMessageRevocation, handleMessageEdit, storeMessage } = require('./src/utils/handler/HandleRevocation.js');
-
-
-
 
 /**
  * 
@@ -193,7 +189,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
             const args = body.split(' ').slice(1);
 
             context.args = args;
-            context.full = body;// full command text
+            context.full = body;
             context.text = args.join(" ")
             context.command = commandName;
             context.cmd = prefix + commandName
@@ -445,22 +441,6 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, react,
         react("🔄️")
     }
 
-}
-
-function loadCommandsGroupedByCategory() {
-    const commandsDir = path.join(__dirname, './src/cmd')
-    const categories = {}
-
-    fs.readdirSync(commandsDir).forEach(file => {
-        const category = path.basename(file, '.js')
-        const commands = require(path.join(commandsDir, file))
-
-        if (Array.isArray(commands)) {
-            categories[category] = commands
-        }
-    })
-
-    return categories
 }
 
 // Scheduled message
