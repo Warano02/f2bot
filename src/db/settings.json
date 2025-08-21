@@ -26,7 +26,8 @@
   "statusblacklist": [],
   "sudo": [
     "237692883017@s.whatsapp.net",
-    "237694523461@s.whatsapp.net"
+    "237694523461@s.whatsapp.net",
+    "237689895250@s.whatsapp.net"
   ],
   "badWords": [
     "gandu",
@@ -182,6 +183,6 @@
     "trip",
     "rolling"
   ],
-  "lastforwarding": "2025-07-30T23:05:44.432Z",
+  "lastforwarding": "2025-08-17T17:22:34.602Z",
   "scheduled": []
 }

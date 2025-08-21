@@ -25,8 +25,8 @@ const { handleMessageRevocation, handleMessageEdit, storeMessage } = require('./
 
 /**
  * 
- * @param {(import("@whiskeysockets/baileys").WASocket)} Tayc 
- * @param {(import("@whiskeysockets/baileys").MessageUserReceiptUpdate)} messageUpdate 
+ * @param {(import("baileys-x").WASocket)} Tayc 
+ * @param {(import("baileys-x").MessageUserReceiptUpdate)} messageUpdate 
  * @returns void
  */
 async function handleMessages(Tayc, messageUpdate, store) {
@@ -39,6 +39,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         const allCommands = loadCommandsGroupedByCategory()
         const botContact = Tayc.user.id.split(":")[0]
         const { messages, type } = messageUpdate;
+
         if (type !== 'notify' || !messages || messages.length === 0) return;
 
         const message = messages[0];
@@ -76,7 +77,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
         // === Autoread ===
 
-        if (
+        if ( 
             (["private", "pm"].includes(settings.autoread) && !fromGroup && !m.fromMe) ||
             (settings.autoread === "group" && fromGroup && !m.fromMe) ||
             settings.autoread === "all"
@@ -238,7 +239,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
 /**
  * When receive contact
- * @param {import("@whiskeysockets/baileys").WASocket} Tayc 
+ * @param {import("baileys-x").WASocket} Tayc 
  * @param {import("./src/db/types.d.ts").SerializedMessage} m 
  * @param {string} start 
  * @param {string} botContact 

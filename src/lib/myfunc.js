@@ -5,7 +5,7 @@ const {
     delay,
     getContentType,
     downloadMediaMessage
-} = require('@whiskeysockets/baileys')
+} = require("baileys-x")
 const chalk = require('chalk')
 const fs = require('fs')
 const Crypto = require('crypto')
@@ -316,13 +316,15 @@ exports.parseVcard = parseVcard;
 
 /**
  * Serialize Message
- * @param {import("@whiskeysockets/baileys").WASocket} TaycInc
- * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate} m
+ * @param {import("baileys-x").WASocket} TaycInc
+ * @param {import("baileys-x").MessageUserReceiptUpdate} m
  * @param {import('../db/types.d.js').Store} store
  * @returns {import("../db/types.d.ts").SerializedMessage} 
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
+    console.log(m);
+    
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
@@ -344,10 +346,12 @@ exports.smsg = async (TaycInc, m, store) => {
         }
         m.fromMe = m.key.fromMe || m.sender === botJid
     }
+    
 
     if (m.message) {
         m.mtype = getContentType(m.message)
         const content = m.message?.[m.mtype]
+        
         if (["viewOnceMessage", "viewOnceMessageV2", "viewOnceMessageV2Extension"].includes(m.mtype)) {
             const inner = content?.message
             const innerType = inner && Object.keys(inner)[0]

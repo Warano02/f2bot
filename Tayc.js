@@ -12,7 +12,7 @@ const {
     jidDecode,
     jidNormalizedUser,
     makeCacheableSignalKeyStore
-} = require("@whiskeysockets/baileys")
+} = require("baileys-x")
 require("./src/db/config")
 
 const { handleMessages, ScheduledMessages } = require('./main')
@@ -127,8 +127,12 @@ async function startTaycInc() {
 
     TaycInc.ev.on('messages.upsert', async (chatUpdate) => {
         try {
+
             const mek = chatUpdate.messages[0]
+            console.log(mek);
+
             if (!mek.message) return
+
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
                 await handleStatusUpdate(TaycInc, chatUpdate)
