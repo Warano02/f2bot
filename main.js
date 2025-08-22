@@ -305,7 +305,7 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
 
                 await antispam()
 
-                await global.currentClient.sendMessage(jid, { text: mess });
+                await Tayc.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
 
                 if (settings.settings.diffusion) {
@@ -329,6 +329,7 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
  * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
  * @returns void
  */
+
 async function handleAddUserResponse({ reply, m, chatId, settings }) {
     try {
         if (m.fromMe || !settings?.asc) return addQeu.delete(chatId)
@@ -467,6 +468,7 @@ async function ScheduledMessages(Tayc) {
         }
         tab = tab.filter(m => new Date(m.sendAt) > now);
         saveNewSetting({ ...settings, scheduled: tab });
+
         try {
             const response = `✅ Successfully sent ${messages.length} scheduled message(s).`;
             await Tayc.sendMessage(Tayc.user.id, { text: response });
