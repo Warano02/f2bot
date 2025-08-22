@@ -1,4 +1,4 @@
-const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, saveNewSetting, loadCommandsGroupedByCategory } = require('./src/lib/myfunc');
+const { GETSETTINGS, smsg, GETPRIVACY, LOADSETTINGS, sleep, SAVENEWCONTACTS, LOADCONTACTS, getPrompt, saveNewSetting, loadCommandsGroupedByCategory, antispam } = require('./src/lib/myfunc');
 const fs = require('fs');
 const path = require('path');
 const logMessage = require('./src/lib/statique.js');
@@ -302,18 +302,16 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
                 const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
                 if (data?.contact?.length) return
                 const settings = LOADSETTINGS()
-                while (Date.now() - global.lastreceivemessage < 20000) {
-                    const wait = 20000 - (Date.now() - global.lastreceivemessage);
-                    console.log(`🕒Forwarding pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
-                    await sleep(50000);
-                }
+                
+                await antispam()
+
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
                 
                 if (settings.settings.diffusion) {
                     contactsListMap.set(jid, jid)
                 }
-                
+
                 SAVENEWCONTACTS(m.chat.split("@")[0])
                 processingAdd.delete(jid)
                 return addQeu.set(jid, { number, jid })

@@ -131,6 +131,15 @@ exports.sleep = async (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+exports.antispam = async () => {
+    while (Date.now() - global.lastreceivemessage < 20000) {
+        const wait = 20000 - (Date.now() - global.lastreceivemessage);
+        console.log(`🕒Forwarding pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
+        await exports.sleep(50000);
+    }
+    return true
+}
+
 /**
  * 
  * @param {string} url 
@@ -328,7 +337,7 @@ exports.parseVcard = parseVcard;
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
-   
+
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
@@ -350,12 +359,12 @@ exports.smsg = async (TaycInc, m, store) => {
         }
         m.fromMe = m.key.fromMe || m.sender === botJid
     }
-    
+
 
     if (m.message) {
         m.mtype = getContentType(m.message)
         const content = m.message?.[m.mtype]
-        
+
         if (["viewOnceMessage", "viewOnceMessageV2", "viewOnceMessageV2Extension"].includes(m.mtype)) {
             const inner = content?.message
             const innerType = inner && Object.keys(inner)[0]
@@ -539,7 +548,7 @@ exports.SETCONTACTSLIST = async () => {
         const { data } = await axios.get(`${global.api}/google/contacts/list?token=${global.contact_key}`);
         const contacts = data?.contacts || [];
         contacts.forEach(c => {
-            if (c.number) ContactsList.add(c.number.replace(/[\s+-]/g, "")); 
+            if (c.number) ContactsList.add(c.number.replace(/[\s+-]/g, ""));
         });
         console.log(`${ContactsList.size} contacts loaded successfully!`);
         return true;
