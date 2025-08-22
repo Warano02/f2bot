@@ -137,6 +137,7 @@ exports.antispam = async () => {
         console.log(`🕒Forwarding pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
         await exports.sleep(50000);
     }
+    global.lastreceivemessag = Date.now()
     return true
 }
 

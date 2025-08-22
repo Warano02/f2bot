@@ -77,7 +77,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
         // === Autoread ===
 
-        if ( 
+        if (
             (["private", "pm"].includes(settings.autoread) && !fromGroup && !m.fromMe) ||
             (settings.autoread === "group" && fromGroup && !m.fromMe) ||
             settings.autoread === "all"
@@ -200,10 +200,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
             if (!matched) return
 
-            if (taycMode === "private" && !context.isOwner) {
-                react("🚬")
-                return
-            }
+            if (taycMode === "private" && !context.isOwner) return react("")
 
             if (typeof matched.operate === 'function') {
                 try {
@@ -289,25 +286,28 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
     }
     console.log(chalk.cyan(`🔍 Found ${rawContacts.length} contact(s)`));
     await markAsRead()
+
     for (const contact of rawContacts) {
         const number = extractPhoneNumber(contact.vcard);
         if (!number) continue;
         const jid = `${number}@s.whatsapp.net`;
         if (processingAdd.has(jid)) continue
         const mess = GETPRIVACY()?.mess?.addNewContact || `*Hi ${contact.displayName}, Save me as ${Tayc?.user?.name}*`;
+        
         processingAdd.set(jid, { number, jid })
+
         queue.add(async () => {
             try {
                 console.log(`🔎 Checking if ${number} exists for ${botContact}`);
                 const { data } = await axios.get(global.api + `/api/check_contacts?phone=${number}&user=${botContact}`)
                 if (data?.contact?.length) return
                 const settings = LOADSETTINGS()
-                
+
                 await antispam()
 
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
-                
+
                 if (settings.settings.diffusion) {
                     contactsListMap.set(jid, jid)
                 }
@@ -347,7 +347,7 @@ async function handleAddUserResponse({ reply, m, chatId, settings }) {
 
 
 /**
- * Chatbot
+ * When user receive new contacts
  * @param {import("./src/db/types.d.ts").BotCommandContext} param0 
  * @returns void
  */
@@ -356,6 +356,7 @@ async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, 
         const privacy = GETPRIVACY()
         const contact = LOADCONTACTS()
         if (isGroup || contact.includes(m.chat) || !settings.asc || !privacy.mess.diffusionmode || diffusionModeContacts.has(m.chat) || m.fromMe) return
+
         return queue.add(async () => {
             if (diffusionModeContacts.has(m.chat)) return
             diffusionModeContacts.set(m.chat)
@@ -367,11 +368,7 @@ async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, 
             await saveContact(c, true)
             SAVENEWCONTACTS(number)
 
-            while (Date.now() - global.lastreceivemessage < 20000) {
-                const wait = 20000 - (Date.now() - global.lastreceivemessage);
-                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
-                await sleep(10000);
-            }
+            await antispam()
 
             await reply(privacy.mess.diffusionmode)
             return markAsRead()
@@ -436,11 +433,7 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, react,
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
         if (data?.error) throw new Error(data);
         queue.add(async () => {
-            while (Date.now() - global.lastreceivemessage < 20000) {
-                const wait = 20000 - (Date.now() - global.lastreceivemessage);
-                console.log(`🕒 contacting pause, WhatsApp is actif. waiting... ${Math.ceil(wait / 1000)}s`);
-                await sleep(50000);
-            }
+            await antispam()
             await reply(data.msg)
         })
 
