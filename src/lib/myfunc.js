@@ -122,6 +122,11 @@ exports.clockString = (ms) => {
     return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
 }
 
+/**
+ * 
+ * @param {number} ms 
+ * @returns void
+ */
 exports.sleep = async (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -323,8 +328,7 @@ exports.parseVcard = parseVcard;
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
-    console.log(m);
-    
+   
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {

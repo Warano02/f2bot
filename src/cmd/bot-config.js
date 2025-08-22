@@ -72,7 +72,7 @@ module.exports = [
         desc: "Set the autoread mode",
         operate: async ({ reply, args, Settings, settings, saveNewSetting }) => {
             try {
-                if (!["all", "group", "private", "pm"].includes(args[0])) return reply(`❌ Invalid argument. Please use "all", "group", "private", or "pm".`)
+                if (!["all", "group", "private", "pm","off"].includes(args[0])) return reply(`❌ Invalid argument. Please use "all", "group", "private", or "pm".`)
                 settings.autoread = args[0]
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Autoread mode set to ${args[0]} successfully !*`);
@@ -111,8 +111,6 @@ module.exports = [
                 if (!text) {
                     return reply(`❌ Please provide emojis separated by commas.\n\nExample:\n*statusemojis 😂,🔥,💯*`);
                 }
-
-                // Extraire chaque élément séparé par virgule
                 const rawItems = text.split(",").map(e => e.trim());
                 const validEmojis = rawItems.filter(e => e.match(/^\p{Emoji}+$/u));
 
