@@ -204,6 +204,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
                 react("🚬")
                 return
             }
+
             if (typeof matched.operate === 'function') {
                 try {
 
@@ -228,6 +229,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (settings.diffusion && !diffusionModeContacts.has(m.chat)) {
             await handleDiffuionContact(context)
         }
+
     } catch (error) {
         console.error('❌ Error in handleMessages:', error);
         await Tayc.sendMessage(Tayc.user.id, {
@@ -307,9 +309,12 @@ async function handleContactDetected(Tayc, m, start, botContact, markAsRead) {
                 }
                 await global.currentClient.sendMessage(jid, { text: mess });
                 await axios.post(global.api + `/api/new_contacts`, { phone: number, name: contact?.displayName, user: botContact, jid },)
+                
                 if (settings.settings.diffusion) {
                     contactsListMap.set(jid, jid)
                 }
+                
+                SAVENEWCONTACTS(m.chat.split("@")[0])
                 processingAdd.delete(jid)
                 return addQeu.set(jid, { number, jid })
             } catch (e) {
@@ -362,7 +367,7 @@ async function handleDiffuionContact({ m, markAsRead, isGroup, settings, reply, 
             const c = { number, name: m.pushName + ` ${settings?.addprefix} ${flags.countryCode(kk?.country || 'Unknown')?.emoji || ''}` }
 
             await saveContact(c, true)
-            SAVENEWCONTACTS(m.chat.split("@")[0])
+            SAVENEWCONTACTS(number)
 
             while (Date.now() - global.lastreceivemessage < 20000) {
                 const wait = 20000 - (Date.now() - global.lastreceivemessage);

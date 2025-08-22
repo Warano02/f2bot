@@ -519,13 +519,13 @@ exports.GETPRIVACY = () => {
 
 /**
  * 
- * @returns {[string]}
+ * @returns {[string]} - Array of jid 
  */
 exports.LOADCONTACTS = () => Array.from(ContactsList, e => e + "@s.whatsapp.net");
 
 /**
  * 
- * @param {string} contact 
+ * @param {string} contact -  the phone number not a jid 
  * @returns void
  */
 
