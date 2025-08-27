@@ -44,6 +44,16 @@ module.exports = [
             saveNewSetting({ ...Settings })
             reply(`✅*Auto save contact prefix set to ${text} successfully*`)
         }
+    },
+    {
+        command: ["setdiffusionmessage", "setdmmodemess", "setdmmsg"],
+        desc: "modifies the message that will be sent to a contact when dm mode is activated",
+        operate: async ({ reply, text, Settings, saveNewSetting }) => {
+            if (!text) return reply(`❌*Please provide the text you wanna send when contacts is saved*.`)
+            Settings.mess.diffusionmode = text
+            saveNewSetting({ ...Settings })
+            reply(`*✅The message that will be sent to a contact when it is saved has been successfully modified.*`)
+        }
     }
 
 ]
