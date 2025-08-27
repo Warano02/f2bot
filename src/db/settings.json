@@ -3,7 +3,7 @@
     "prefix": ".",
     "chatbot": "off",
     "menustyle": "1",
-    "training": "off",
+    "training": "on",
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
