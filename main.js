@@ -229,9 +229,9 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
     } catch (error) {
         console.error('❌ Error in handleMessages:', error);
-        await Tayc.sendMessage(Tayc.user.id, {
-            text: '❌ Message handling failed:\n\n' + error.message,
-        });
+        // await Tayc.sendMessage(Tayc.user.id, {
+        //     text: '❌ Message handling failed:\n\n' + error.message,
+        // });
     }
 }
 
