@@ -48,20 +48,15 @@ module.exports = [
     {
         command: ["adds", "sendaddmess", "sendaddmessage"],
         desc: "allows you to send a message to all members of a group but who are not in the user's contact list. This can, for example, be useful for broadcasting a message to contacts to ask them to register.",
-        /**
-         * 
-         * @param {import("../db/types.d.ts").BotCommandContext} param0 
-         * @returns 
-         */
         operate: async ({ m, Tayc, reply, isGroup, react, getForwardStatus, estimateForwardTime, FORWARDMESSAGE, text }) => {
             if (!isGroup) return reply("❌*This command can only be use in the group*")
             if (!text) return reply("*Please provid the text to forward*")
             const status = getForwardStatus();
             if (status?.isRunning) return reply("📭 *Am in working.* please try again later !");
             try {
-               await react("⌛")
+                await react("⌛")
                 const { data } = await axios.get(global.api + "/google/contacts/list?token=" + global.contact_key)
-               await react("")
+                await react("")
                 let contacts = data?.contacts
                 contacts = contacts.map(e => e.number.replace("+", "") + "@s.whatsapp.net")
                 const t = m?.groupMetadata.participants.map(e => e.jid)
@@ -105,7 +100,7 @@ module.exports = [
             if (jids.length === 0) {
                 return reply("❌ *No valid phone numbers to forward to.*");
             }
-
+            react("⌛")
             const result = await FORWARDMESSAGE(Tayc, jids, text);
             if (result?.error) {
                 console.log(result);

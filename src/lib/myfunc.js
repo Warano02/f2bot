@@ -446,7 +446,7 @@ exports.smsg = async (TaycInc, m, store) => {
 
                     const content = buffer.toString()
                     m.quoted.vcf = parseVcard(content)
-                    console.log(m.quoted.vcf);
+                 //   console.log(m.quoted.vcf);
 
                 } catch (e) {
                     console.error('❌ Failed to parse quoted VCF file:', e.message)

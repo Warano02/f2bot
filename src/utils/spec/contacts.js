@@ -25,7 +25,7 @@ const saveContact = async (contact, isadd) => {
         console.log(e);
         const errMsg = e?.response?.data?.msg || "Not set"
         const code = e?.response.status || 500
-        global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${errMsg} ` })
+    //   global.currentClient.sendMessage(global.currentClient.user.id, { text: `❌*Failed to save contact*.\n AutoSaveContact has been disabled. \n> *Error*: ${errMsg} ` })
         return [400, 409, 404].includes(code) ? disabledAutosave() : ""
     }
 }

@@ -1,14 +1,12 @@
 const axios = require("axios");
 const VCFUTILS = require("../utils/spec/vcf");
+const { sleep } = require("../lib/myfunc.js");
 
 module.exports = [
     {
         command: ["test"],
         desc: "",
-        /**
-       * 
-       * @param {import('../db/types.d.ts').BotCommandContext} param0 
-       */
+
         operate: async ({ Tayc, store }) => {
             try {
                 const cc = store.contacts
@@ -125,6 +123,33 @@ module.exports = [
             } catch (e) {
                 console.log(e);
                 react("❌")
+            }
+        }
+    },
+    {
+        command: ["sectionvcf", "svcf"],
+        desc: "allows you to split a vcf file into several",
+        operate: async ({ Tayc, text, reply, m }) => {
+            if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
+            if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
+            if (!text) return reply("Please provide the parameter to split your vcf")
+            if (text > m.quoted.vcf.length) return reply("*🥸 You need to enter limit less than this vcf contacts lenght*")
+            const tabs = m.quoted.vcf.reduce((acc, _, i) => {
+                if (i % text === 0) acc.push(m.quoted.vcf.slice(i, i + text));
+                return acc;
+            }, []);
+            let tmp, i = 1
+            for (const tab of tabs) {
+                tmp = new VCFUTILS(tab)
+                await Tayc.sendMessage(
+                    m.chat,
+                    {
+                        document: tmp.toVCF(), mimetype: "text/vcard", fileName: `Cleaned_Contact${i}.vcf`, caption: `*Section ${i}.*`,
+                    },
+                    { quoted: m }
+                );
+                await sleep(3000)
+                i++
             }
         }
     }

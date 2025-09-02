@@ -115,7 +115,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (m.message?.protocolMessage?.type === 14) return handleMessageEdit(Tayc, message, botNumber);
 
         if (m?.mtype === "protocolMessage") return
-        logMessage({ number: m.sender.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
+        logMessage({ number: m.sender?.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
         // === Build context ===
         /**@type {import("./src/db/types.d.ts").BotCommandContext} */

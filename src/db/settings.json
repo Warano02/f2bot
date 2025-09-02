@@ -7,9 +7,9 @@
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "off",
+    "awc": "on",
     "addprefix": "tayc",
-    "asc": false,
+    "asc": true,
     "mode": "private",
     "diffusion": false,
     "antidelete": "private",
@@ -20,8 +20,8 @@
     "statusemojis": "👑"
   },
   "mess": {
-    "addNewContact": "",
-    "diffusionmode": "*Contact save successffully !*"
+    "addNewContact": "Yo ! On s'enregistre....",
+    "diffusionmode": "Okay, c'est fait !"
   },
   "statusblacklist": [],
   "sudo": [
@@ -29,7 +29,6 @@
     "237694523461@s.whatsapp.net",
     "237689895250@s.whatsapp.net"
   ],
-  
   "badWords": [
     "gandu",
     "madarchod",
