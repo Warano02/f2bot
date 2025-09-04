@@ -5,7 +5,7 @@ const {
     delay,
     getContentType,
     downloadMediaMessage
-} = require("baileys-x")
+} = require("@whiskeysockets/baileys")
 const chalk = require('chalk')
 const fs = require('fs')
 const Crypto = require('crypto')
@@ -331,8 +331,8 @@ exports.parseVcard = parseVcard;
 
 /**
  * Serialize Message
- * @param {import("baileys-x").WASocket} TaycInc
- * @param {import("baileys-x").MessageUserReceiptUpdate} m
+ * @param {import("@whiskeysockets/baileys").WASocket} TaycInc
+ * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate} m
  * @param {import('../db/types.d.js').Store} store
  * @returns {import("../db/types.d.ts").SerializedMessage} 
  */

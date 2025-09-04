@@ -7,8 +7,8 @@ const statusQueue = new PQueue({ concurrency: 1, interval: 10000, intervalCap: 1
 const linkSet = new Set()
 /**
  * 
- * @param {import("baileys-x").WASocket} sock 
- * @param {import("baileys-x").MessageUserReceiptUpdate} update 
+ * @param {import("@whiskeysockets/baileys").WASocket} sock 
+ * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate} update 
  * @returns 
  */
 async function handleStatusUpdate(sock, update) {

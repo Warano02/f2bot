@@ -70,7 +70,7 @@ function getDynamicDelay(index) {
 
 /**
  * 
- * @param {import("baileys-x").SocketConfig} Tayc 
+ * @param {import("@whiskeysockets/baileys").SocketConfig} Tayc 
  * @param {Array<String>} Jids 
  * @param {String} mess 
  * @returns Object

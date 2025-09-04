@@ -12,7 +12,7 @@ const {
     jidDecode,
     jidNormalizedUser,
     makeCacheableSignalKeyStore
-} = require("baileys-x")
+} = require("@whiskeysockets/baileys")
 require("./src/db/config")
 
 const { handleMessages, ScheduledMessages } = require('./main')

@@ -25,8 +25,8 @@ const { handleMessageRevocation, handleMessageEdit, storeMessage } = require('./
 
 /**
  * 
- * @param {(import("baileys-x").WASocket)} Tayc 
- * @param {(import("baileys-x").MessageUserReceiptUpdate)} messageUpdate 
+ * @param {(import("@whiskeysockets/baileys").WASocket)} Tayc 
+ * @param {(import("@whiskeysockets/baileys").MessageUserReceiptUpdate)} messageUpdate 
  * @returns void
  */
 async function handleMessages(Tayc, messageUpdate, store) {
@@ -238,7 +238,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
 /**
  * When receive contact
- * @param {import("baileys-x").WASocket} Tayc 
+ * @param {import("@whiskeysockets/baileys").WASocket} Tayc 
  * @param {import("./src/db/types.d.ts").SerializedMessage} m 
  * @param {string} start 
  * @param {string} botContact 

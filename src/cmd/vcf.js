@@ -68,7 +68,7 @@ module.exports = [
             let tab = vcfUtils.exportToJSON()
             const list = tab.map((el, i) => i + 1 + ". @" + el.number).join("\n")
             const tags = tab.map(e => e.jid)
-            console.log(tags);
+          //  console.log(tags);
 
             await reply(`Here is all the ${tab.length} contact(s):\n${list}\n\n> Take All You Can`, tags)
         }

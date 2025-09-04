@@ -1,5 +1,5 @@
 const { GETSETTINGS, getMediaPath, addToGlobalHistory } = require("../../lib/myfunc");
-const { downloadContentFromMessage } = require("baileys-x");
+const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const messageStore = new Map();
 const path=require("path")
 const { writeFile } = require('fs/promises');
@@ -7,7 +7,7 @@ const chalk=require("chalk")
 const fs=require("fs")
 /**
  * 
- * @param {import("baileys-x").MessageUserReceiptUpdate } message 
+ * @param {import("@whiskeysockets/baileys").MessageUserReceiptUpdate } message 
  * @param {boolean} isUser 
  * @returns void
  */
@@ -97,7 +97,7 @@ async function storeMessage(message, isUser) {
 
 /**
  * antidelete message
- * @param {import("baileys-x").WASocket} sock 
+ * @param {import("@whiskeysockets/baileys").WASocket} sock 
  * @param {import("../../db/types").SerializedMessage} m 
  * @param {string} botNumber 
  * @returns void
@@ -218,7 +218,7 @@ async function handleMessageRevocation(sock, m, botNumber) {
 
 /**
  * 
- * @param {import("baileys-x").WASocket} sock 
+ * @param {import("@whiskeysockets/baileys").WASocket} sock 
  * @param {import("../../db/types").SerializedMessage} m 
  * @param {string} botNumber 
  * @returns 
