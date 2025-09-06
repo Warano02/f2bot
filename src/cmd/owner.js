@@ -5,6 +5,15 @@ const path = require("path");
 const { isUrl, sleep } = require("../lib/myfunc");
 module.exports = [
     {
+        command: ['block'],
+        desc: "Block contact",
+        operate: async ({ Tayc, m, reply, isGroup, text }) => {
+            const userId = isGroup ? m.mentionedJid[0] || m.quoted?.sender || text.replace(/[^0-9]/g, "") + "@s.whatsapp.net" : m.chat;
+            await reply("*Blocked*")
+            await Tayc.updateBlockStatus(userId, "block");
+        }
+    },
+    {
         command: ["cleartmp", "cleantmp", "clstmp"],
         desc: 'Clear temporary files',
         operate: async ({ reply, isOwner }) => {
@@ -13,6 +22,7 @@ module.exports = [
             reply(result.message);
         }
     },
+
     {
         command: ["contactlist", "ctl"],
         desc: "Show all the contact that bot have send add message",
@@ -30,6 +40,19 @@ module.exports = [
         }
     },
     {
+        command: ['lastseen'],
+        desc: "Privacy last seen  online",
+        operate: async ({ Tayc, reply, mess, prefix, command, text, args }) => {
+            if (!text) return reply(`Options: all/contacts/contact_blacklist/none\nExample: ${prefix + command} all`);
+
+            const validOptions = ["all", "contacts", "contact_blacklist", "none"];
+            if (!validOptions.includes(args[0])) return reply("Invalid option");
+
+            await Tayc.updateLastSeenPrivacy(text);
+            await reply(mess.done);
+        }
+    },
+    {
         command: ["lang", "setlang"],
         desc: "Set the language of the bot",
         operate: async ({ reply, args, Settings, settings, saveNewSetting }) => {
@@ -39,6 +62,20 @@ module.exports = [
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Language set to ${args[0]} successfully !*`);
             } catch { }
+        }
+    },
+    {
+        command: ['listbadword'],
+        desc: "List of saved badword",
+        operate: async ({ m, reply, Settings }) => {
+            if (m.isGroup) return reply('This command cannot be used in personal chats.');
+
+            if (Settings.badWords.length === 0) return reply('No bad words have been added yet.');
+
+            let text = '';
+
+            text += `*Bad Words List:*\n\n${Settings.badWords.map((e, i) => i + 1 + ". " + e).join('\n')}\nTotal bad words: ${Settings.badWords.length}`;
+            reply(text);
         }
     },
     {
@@ -75,7 +112,7 @@ module.exports = [
         command: ["sudolist", "listsudo"],
         desc: "List all the user that have total controle your bot",
         operate: async ({ reply, Tayc, Settings }) => {
-            const  sudo = Settings.sudo
+            const sudo = Settings.sudo
             if (!sudo.length) return reply("*Only you have a control of your bot for now.*")
             if (sudo.length === 1) return reply(`Your sudo is @${sudo[0].split('@')[0]}.`, sudo)
             reply(`Here is list of all your sudo ${Tayc.user.name}:\n\n${sudo.map(e => "- @" + e.split("@")[0]).join("\n")}.\n\n> *©️ ${new Date().getFullYear()} Tayc Bot, Powered by Warano.*`, sudo)
