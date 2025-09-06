@@ -16,6 +16,38 @@ module.exports = [
         }
     },
     {
+        command: ['dalle'],
+        desc: "Ask question to an AI",
+        operate: async ({ Tayc, m, reply, text, react }) => {
+            if (!text) return reply("*Please enter a query!*");
+            await react("⌛")
+            const apiUrl = `https://api.siputzx.my.id/api/ai/stable-diffusion?prompt=${encodeURIComponent(text)}`;
+            try {
+                await Tayc.sendMessage(m.chat, { image: { url: apiUrl } }, { quoted: m });
+            } catch (error) {
+                console.error('Error generating image:', error);
+                reply("*An error occurred while generating the image.*");
+            } finally {
+                react("")
+            }
+        }
+    },
+    {
+        command: ['generate'],
+        desc: "Generate image",
+        operate: async ({ Tayc, m, reply, text, prefix, command }) => {
+            if (!text) return reply(`*Please provide a query to generate an image!*`);
+            const api3Url = `https://api.gurusensei.workers.dev/dream?prompt=${encodeURIComponent(text)}`;
+            try {
+                await Tayc.sendMessage(m.chat, { image: { url: api3Url } }, { quoted: m });
+            } catch (error) {
+                console.error('Error generating image:', error);
+                reply("*An error occurred while generating the image.*");
+            }
+        }
+    },
+
+    {
         command: ['imagen'],
         desc: "Generate image",
         operate: async ({ Tayc, m, reply, text }) => {
