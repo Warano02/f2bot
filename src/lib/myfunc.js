@@ -328,6 +328,31 @@ function parseVcard(vcfData) {
 
 exports.parseVcard = parseVcard;
 
+exports.checkBandwidth = async () => {
+  let ind = 0;
+  let out = 0;
+  for (let i of await require("node-os-utils").netstat.stats()) {
+    ind += parseInt(i.inputBytes);
+    out += parseInt(i.outputBytes);
+  }
+  return {
+    download: exports.bytesToSize(ind),
+    upload: exports.bytesToSize(out),
+  };
+};
+
+
+/**
+ * 
+ * @param {number} bytes 
+ * @returns string
+ */
+exports.formatSize = (bytes) => {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Bytes";
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
+};
 
 /**
  * Serialize Message

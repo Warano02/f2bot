@@ -1,5 +1,9 @@
 const axios = require("axios");
-const { runtime } = require("../lib/myfunc");
+const { runtime, formatSize, checkBandwidth } = require("../lib/myfunc");
+const os = require('os');
+const checkDiskSpace = require('check-disk-space').default;
+const performance = require('perf_hooks').performance;
+
 module.exports = [
     {
         command: ['ping', 'p'],
@@ -29,6 +33,42 @@ module.exports = [
                     contextInfo: { quotedMessage: m.message }
                 });
             }
+        }
+    },
+    {
+        command: ['botstatus', 'statusbot'],
+        desc: "Get bot status ",
+        operate: async ({ Tayc, m, reply }) => {
+            const used = process.memoryUsage();
+            const ramUsage = `${formatSize(used.heapUsed)} / ${formatSize(os.totalmem())}`;
+            const freeRam = formatSize(os.freemem());
+            const disk = await checkDiskSpace(process.cwd());
+            const latencyStart = performance.now();
+
+            await reply("⏳ *Calculating ping...*");
+            const latencyEnd = performance.now();
+            const ping = `${(latencyEnd - latencyStart).toFixed(2)} ms`;
+
+            const { download, upload } = await checkBandwidth();
+            const uptime = runtime(process.uptime());
+
+            const response = `
+      *🖖 BOT STATUS 🖖*
+
+🚬 *Ping:* ${ping}
+🚬 *Uptime:* ${uptime}
+🚬 *RAM Usage:* ${ramUsage}
+🚬 *Free RAM:* ${freeRam}
+🚬 *Disk Usage:* ${formatSize(disk.size - disk.free)} / ${formatSize(disk.size)}
+🚬 *Free Disk:* ${formatSize(disk.free)}
+🚬 *Platform:* ${os.platform()}
+🚬 *NodeJS Version:* ${process.version}
+🚬 *CPU Model:* ${os.cpus()[0].model}
+🚬 *Downloaded:* ${download}
+🚬 *Uploaded:* ${upload}
+`;
+
+            Tayc.sendMessage(m.chat, { text: response.trim() }, { quoted: m });
         }
     },
     {
@@ -74,7 +114,7 @@ module.exports = [
         desc: "Give a bot uptime",
         operate: async ({ reply }) => {
             const botUptime = runtime(process.uptime());
-            reply(`*🔹 ${botUptime}*`);
+            reply(`*🖖 ${botUptime}*`);
         }
     },
 
