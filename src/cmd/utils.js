@@ -1,6 +1,5 @@
 const statusDownloader = require("../utils/common/status")
 const viewOnceUtils = require("../utils/common/viewonce")
-
 module.exports = [
     {
         command: ["repeat", "rpt"],
@@ -41,6 +40,7 @@ module.exports = [
             await statusDownloader({ Tayc, m, chatId })
         }
     },
-    
+  
+
 
 ]

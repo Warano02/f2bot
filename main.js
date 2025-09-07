@@ -432,6 +432,8 @@ async function handleChatbotResponse({ m, Tayc, chatId, simulatePresence, react,
     try {
         simulatePresence("composing", 8000)
         const { data } = await axios.post(global.api + "/api/chatbot", payload)
+        console.log(data);
+        
         if (data?.error) throw new Error(data);
         queue.add(async () => {
             await antispam()
