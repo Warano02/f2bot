@@ -4,28 +4,11 @@ const { sleep } = require("../lib/myfunc.js");
 
 module.exports = [
     {
-        command: ["test"],
-        desc: "",
-
-        operate: async ({ Tayc, store }) => {
-            try {
-                const cc = store.contacts
-                console.log(cc);
-
-            } catch (e) {
-                console.log(e);
-
-            }
-        }
-    }
-    ,
-    {
         command: ["removeduplicatecontact", "rdc"],
         desc: "Remove duplicated contact",
         operate: async ({ reply, Tayc, m, cmd }) => {
             if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
-
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             vcfUtils.removeDuplicateContacts();
             await Tayc.sendMessage(
@@ -66,7 +49,7 @@ module.exports = [
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             let tab = vcfUtils.exportToJSON()
-            const list = tab.map((el, i) =>` 👤: *${el.name}* \n\n *N°*: @${el.number}\n`).join("\n")
+            const list = tab.map((el, i) => ` 👤: *${el.name}* \n\n *N°*: @${el.number}\n`).join("\n")
             const tags = tab.map(e => e.jid)
             //  console.log(tags);
 
@@ -74,22 +57,42 @@ module.exports = [
         }
     },
     {
-     command:["addsufix","asfx"],
-     desc:"Add a sufix to all contact name in the vcf",
-     operate:async({m,cmd,reply,text,Tayc})=>{
-        if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
-        if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
-        if(!text) return reply(`❌*Please provide the sufix to add to all contact name*\n*Usage*:\n> ${command} <sufix>`)
-        const vcfUtils = new VCFUTILS(m.quoted.vcf);
-        vcfUtils.addSufixToNames(text);
-        await Tayc.sendMessage(
-            m.chat,
-            {
-                document: vcfUtils.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅ Sufix added to all contact name`,
-            },
-            { quoted: m, ephemeralExpiration: 86400 }
-        );
-     }
+        command: ["addsufix", "asfx"],
+        desc: "Add a sufix to all contact name in the vcf",
+        operate: async ({ m, cmd, reply, text, Tayc }) => {
+            if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
+            if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
+            if (!text) return reply(`❌*Please provide the sufix to add to all contact name*\n*Usage*:\n> ${command} <sufix>`)
+            const vcfUtils = new VCFUTILS(m.quoted.vcf);
+            vcfUtils.addSufixToNames(text);
+            await Tayc.sendMessage(
+                m.chat,
+                {
+                    document: vcfUtils.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅ Sufix added to all contact name`,
+                },
+                { quoted: m, ephemeralExpiration: 86400 }
+            );
+        }
+    },
+    {
+        command: ["onlyfiltercountry", "ofc"],
+        desc: "Filter the contact by country code",
+        operate: async ({ m, cmd, reply, text, Tayc }) => {
+            if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
+            if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
+            if (!text) return reply(`❌*Please provide the country code to filter*\n*Usage*:\n> ${command} <country code>\n\n*Example*:\n> ${command}  +237`)
+
+            const vcfUtils = new VCFUTILS(m.quoted.vcf);
+            const result = vcfUtils.filterByCountryCode(text.startsWith("+") ? text : `+${text}`);
+            if (result.toVCF().length === 0) return reply(`*No contact found with ${text} country code*`)
+            await Tayc.sendMessage(
+                m.chat,
+                {
+                    document: vcfUtils.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅  Contacts filtered by  country code ${text}`,
+                },
+                { quoted: m, ephemeralExpiration: 86400 }
+            );
+        }
     },
     {
         command: ["tovcf", "tagtovcf", "tagalltovcf", "ttvcf"],
