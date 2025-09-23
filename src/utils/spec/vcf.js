@@ -17,7 +17,7 @@ class VCFUtils {
     addCountryFlagToNames() {
         this.contacts = this.contacts.map(c => {
             if (!c.name.startsWith(c.flag)) {
-                return { ...c, name: `${c.flag} ${c.name}` };
+                return { ...c, name: `${c.name} ${c.flag}` };
             }
             return c;
         });
