@@ -11,7 +11,9 @@ function getCommands() {
   return COMMANDS
 }
 
-function loader(dir = path.join(__dirname, "../cmd")) {
+function loadCommands(dir = path.join(__dirname, "../cmd",)) {
+  COMMANDS.length = 0
+  chalk.hex('#DEADED').bold('[TAYC] Loading commands...\n')
   const files = fs.readdirSync(dir)
   for (const file of files) {
     const fullPath = path.join(dir, file)
@@ -26,18 +28,6 @@ function loader(dir = path.join(__dirname, "../cmd")) {
     } catch (e) {
       console.log(chalk.red(`[ERROR] Loading ${file}: ${e.message}`))
     }
-  }
-}
-
-function loadCommands(dir = path.join(__dirname, "../cmd",)) {
-  COMMANDS.length = 0
-  chalk.hex('#DEADED').bold('[TAYC] Loading commands...\n')
-  loader()
-  const pluginsDir = path.join(__dirname, '../../plugins')
-
-  if (fs.existsSync(pluginsDir)) {
-    console.log(chalk.hex('#2c2196ff').bold('[TAYC] Loading plugins...\n'))
-    loader(pluginsDir)
   }
   console.log(chalk.green(`[TAYC] Loaded ${COMMANDS.length} commands.\n\n`))
 }
