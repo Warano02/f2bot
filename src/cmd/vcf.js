@@ -66,12 +66,30 @@ module.exports = [
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             let tab = vcfUtils.exportToJSON()
-            const list = tab.map((el, i) => i + 1 + ". @" + el.number).join("\n")
+            const list = tab.map((el, i) =>` 👤: *${el.name}* \n\n *N°*: @${el.number}\n`).join("\n")
             const tags = tab.map(e => e.jid)
-          //  console.log(tags);
+            //  console.log(tags);
 
             await reply(`Here is all the ${tab.length} contact(s):\n${list}\n\n> Take All You Can`, tags)
         }
+    },
+    {
+     command:["addsufix","asfx"],
+     desc:"Add a sufix to all contact name in the vcf",
+     operate:async({m,cmd,reply,text,Tayc})=>{
+        if (!m.quoted || !m?.quoted.vcf) return reply(`*Reply to a vcf file using ${cmd}*`);
+        if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
+        if(!text) return reply(`❌*Please provide the sufix to add to all contact name*\n*Usage*:\n> ${command} <sufix>`)
+        const vcfUtils = new VCFUTILS(m.quoted.vcf);
+        vcfUtils.addSufixToNames(text);
+        await Tayc.sendMessage(
+            m.chat,
+            {
+                document: vcfUtils.toVCF(), mimetype: "text/vcard", fileName: "Cleaned_Contacts.vcf", caption: `✅ Sufix added to all contact name`,
+            },
+            { quoted: m, ephemeralExpiration: 86400 }
+        );
+     }
     },
     {
         command: ["tovcf", "tagtovcf", "tagalltovcf", "ttvcf"],

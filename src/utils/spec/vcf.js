@@ -23,7 +23,9 @@ class VCFUtils {
         });
         return this;
     }
-
+    addSufixToNames(sufix) {
+        this.contacts = this.contacts.map(c => { if (!c.name.endsWith(sufix)) { return { ...c, name: `${c.name} ${sufix}` } } return c }); return this
+    }
     filterByCountryCode(code = '+237') {
         this.contacts = this.contacts.filter(c => c.countryCode === code);
         return this;
