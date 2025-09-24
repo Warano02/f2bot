@@ -7,9 +7,9 @@
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "off",
+    "awc": "on",
     "addprefix": "tayc",
-    "asc": true,
+    "asc": false,
     "mode": "private",
     "diffusion": false,
     "antidelete": "private",
@@ -27,6 +27,7 @@
   "sudo": [
     "237692883017@s.whatsapp.net",
     "237694523461@s.whatsapp.net",
+    "237621092130@s.whatsapp.net",
     "237689895250@s.whatsapp.net"
   ],
   "badWords": [

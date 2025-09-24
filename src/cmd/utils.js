@@ -17,7 +17,7 @@ module.exports = [
         }
     },
     {
-        command: ["vv", "rvv", "relomovewiewonce"],
+        command: ["vv", "rvv", "removewiewonce"],
         desc: "Remove view once message",
         operate: async ({ Tayc, m: message, quoted, react, chatId }) => {
             if (!quoted) return react("❌")
