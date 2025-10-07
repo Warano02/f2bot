@@ -67,12 +67,15 @@ module.exports = [
         operate: async ({ allCommands, reply, prefix, text }) => {
             const CMDS = getCommands();
             let helpText = `┌───[ *Commands help center* ]───┐\n`
-
+            const List = []
             for (const [category, commands] of Object.entries(allCommands)) {
                 for (const cmd of commands) {
-                    helpText += `│ *${prefix}${cmd.command[0]}* → ${cmd.length < 20 ? cmd.desc : cmd?.desc.slice(0, 17) + "..."}\n`
+                    List.push({ cmd: cmd.command[0], desc: cmd.length < 20 ? cmd.desc : cmd?.desc.slice(0, 17) + "..." })
                 }
             }
+            List.sort((a, b) => a.cmd.localeCompare(b.cmd)).forEach(el => {
+                helpText += `│ *${prefix}${el.cmd}* → ${el.desc}\n`
+            });
             helpText += `\n\n> *NB*: You can type ${prefix}help *<Command>* to get spécifique command help\n`
 
             helpText += `╰─────[ *TAKE ALL YOU CAN* ]──────\n\n`
@@ -88,24 +91,24 @@ module.exports = [
     {
         command: ["tayc"],
         desc: "Help user to use the bot command",
-        operate: async ({ reply,botNumber, text ,react,prefix}) => {
-            if(!text)return reply("🫣What you wanna know?\n*Please provide me the question.*")
+        operate: async ({ reply, botNumber, text, react, prefix }) => {
+            if (!text) return reply("🫣What you wanna know?\n*Please provide me the question.*")
             const commands = getCommands()
             const commandList = commands.map((command) => {
                 const __source = command?.__source.split("\\")
                 const category = __source[__source.length - 1].split(".")[0].toUpperCase()
-                return { category, command: command.command.map(e=>prefix+e), desc: command.desc }
+                return { category, command: command.command.map(e => prefix + e), desc: command.desc }
             })
             let i = 0
             react("🧠")
             while (i < 4) {
                 try {
-                    const { data } = await axios.post(`${global.api}/api/tayc`, { q: text, c: commandList,p:botNumber.split("@")[0].replace(":",'') })
+                    const { data } = await axios.post(`${global.api}/api/tayc`, { q: text, c: commandList, p: botNumber.split("@")[0].replace(":", '') })
                     if (data?.error) throw new Error(data?.msg);
                     react("")
                     return reply(data?.msg)
                 } catch (e) {
-                     i++
+                    i++
                 }
             }
             react("❌")
