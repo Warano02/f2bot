@@ -2,6 +2,7 @@ import type {
   MessageUpsertType,
   GroupMetadata,
   MessageUserReceiptUpdate,
+  WASocket,
 } from "@whiskeysockets/baileys";
 
 export type Command = {
@@ -98,10 +99,13 @@ export type Privacy = {
 export type BotSettings = {
   settings: Settings;
 } & Privacy;
+interface client extends WASocket {
+  sendImageAsStickers: (jid: string, input: string | Buffer) => void;
+}
 
 export type BotCommandContext = {
   sendPrivate: (jid: string, message: string) => Promise<void>;
-  Tayc: WASocket; // client instance
+  Tayc: client; // client instance
   sendText: (jid: string, text: string) => Promise<void>;
   reply: (text: string) => Promise<void>;
   react: (emoji: string) => Promise<void>;

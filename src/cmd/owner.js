@@ -14,6 +14,24 @@ module.exports = [
         }
     },
     {
+        command: ["sticker", "stickers", "s"],
+        desc: "Transform image to sticker",
+        /**
+         * 
+         * @param {import ("../db/types").BotCommandContext} param0 
+         */
+        operate: async ({ Tayc, quoted, reply, cmd,m }) => {
+            if (!quoted) return reply(`*Please rply to an image using ${cmd}*`)
+            const mime = quoted.mtype
+            if (!mime) return reply("*The quoted message does not contain media. Please send or reply to an image, video, or gif.*")
+            if (/image/.test(mime)) {
+                const media = await quoted.download();
+                return Tayc.sendImageAsStickers(m.chat, media, m);
+            }
+            return reply(`*Please rply to an image using ${cmd}*`)
+        }
+    },
+    {
         command: ['delete', 'del', "d"],
         desc: "shurcut to delate an message by sudo only",
         operate: async ({ Tayc, m, reply, }) => {

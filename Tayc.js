@@ -5,6 +5,9 @@ const PhoneNumber = require('awesome-phonenumber')
 const NodeCache = require("node-cache")
 const pino = require("pino")
 global.api = process.env.API || "https://tayc-api.onrender.com"
+const { Sticker } = require('wa-sticker-formatter')
+const fs = require('fs')
+const axios = require('axios')
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -156,6 +159,21 @@ async function startTaycInc() {
             return decode.user && decode.server && decode.user + '@' + decode.server || jid
         }
         return jid
+    }
+
+    TaycInc.sendImageAsStickers = async (jid, input, m) => {
+        if (!jid || !input) return
+        let buffer
+        if (typeof input === 'string' && input.startsWith('http')) {
+            const res = await axios.get(input, { responseType: 'arraybuffer' })
+            buffer = Buffer.from(res.data)
+        }
+        if (typeof input === 'string') buffer = fs.readFileSync(input)
+        if (Buffer.isBuffer(input)) { buffer = input }
+        if (!buffer) throw new Error('Invalid input for sendImageAsSticker')
+        const sticker = new Sticker(buffer, { pack: "Tayc Bot", author: "Warano", quality: 70 })
+        return TaycInc.sendMessage(jid, await sticker.toMessage(), { quoted: m })
+
     }
 
     TaycInc.getName = (jid, withoutContact = false) => {
