@@ -14,6 +14,35 @@ module.exports = [
         }
     },
     {
+        command: ['delete', 'del', "d"],
+        desc: "shurcut to delate an message by sudo only",
+        operate: async ({ Tayc, m, reply, }) => {
+            try {
+
+                await Tayc.sendMessage(m.chat, {
+                    delete: {
+                        remoteJid: m.quoted.fakeObj.key.remoteJid,
+                        fromMe: m.quoted.fakeObj.key.fromMe,
+                        id: m.quoted.fakeObj.key.id,
+                        participant: m.quoted.fakeObj.participant,
+                    }
+                });
+                await Tayc.sendMessage(m.chat, {
+                    delete: {
+                        remoteJid: m.key.remoteJid,
+                        fromMe: m.key.fromMe,
+                        id: m.key.id,
+                        participant: m.key.participant,
+                    }
+                });
+
+            } catch (err) {
+                console.error(err);
+                reply("⚠️ Failed to delete message.");
+            }
+        }
+    },
+    {
         command: ["cleartmp", "cleantmp", "clstmp"],
         desc: 'Clear temporary files',
         operate: async ({ reply, isOwner }) => {
@@ -179,5 +208,5 @@ module.exports = [
             }
         }
     },
-    
+
 ]

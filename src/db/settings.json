@@ -20,13 +20,11 @@
     "statusemojis": "👑"
   },
   "mess": {
-    "addNewContact": "Yo ! On s'enregistre....",
+    "addNewContact": "",
     "diffusionmode": "Okay, c'est fait !"
   },
   "statusblacklist": [],
   "sudo": [
-    "237692883017@s.whatsapp.net",
-    "237694523461@s.whatsapp.net",
     "237621092130@s.whatsapp.net",
     "237689895250@s.whatsapp.net"
   ],
