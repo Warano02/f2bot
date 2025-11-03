@@ -1,4 +1,3 @@
-//@ts-check
 module.exports = [
     {
         command: ['photoai'],
