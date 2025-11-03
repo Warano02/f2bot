@@ -200,7 +200,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
             if (!matched) return
 
-            if (taycMode === "private" && !context.isOwner) return react("")
+            if (taycMode === "private" && !context.isOwner) return react("🖕")
 
             if (typeof matched.operate === 'function') {
                 try {
