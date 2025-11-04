@@ -15,6 +15,9 @@ async function handleStatusUpdate(sock, update) {
     try {
         const config = GETSETTINGS();
         const statusBlackList = GETPRIVACY().statusblacklist || [];
+          const msg = update?.messages?.[0];
+        const key = msg?.key;
+        const messageId = key?.id;
         const  content = msg.message?.extendedTextMessage?.text;
 
         const parts = content
@@ -41,9 +44,7 @@ async function handleStatusUpdate(sock, update) {
 
         if (!config.autoviewstatus) return;
 
-        const msg = update?.messages?.[0];
-        const key = msg?.key;
-        const messageId = key?.id;
+      
 
         if (!msg || !key || key.remoteJid !== 'status@broadcast' || key.fromMe) return;
         const sender = key.participant;
