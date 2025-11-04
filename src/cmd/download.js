@@ -97,18 +97,16 @@ module.exports = [
     {
         command: ['facebook', 'fbdl'],
         desc: "Download Facebook video",
-        operate: async ({ m, text, Tayc, reply }) => {
+        operate: async ({ m, text, Tayc, reply, react }) => {
             if (!text) return reply(`*Please provide a Facebook video url!*`);
 
             try {
+                react("⏳");
                 var dlink = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
-                var dlurl = dlink.data.high;
 
+                var dlurl = dlink.data.data.high
                 await Tayc.sendMessage(m.chat, {
-                    video: {
-                        url: dlurl,
-                        caption: global.botname
-                    }
+                    video: { url: dlurl, }
                 }, {
                     quoted: m
                 });
@@ -119,7 +117,7 @@ module.exports = [
     },
     {
         command: ['gdrive'],
-        desc:"Download files from a google drive",
+        desc: "Download files from a google drive",
         operate: async ({ Tayc, m, reply, text }) => {
             if (!text) return reply("*Please provide a Google Drive file URL*");
 
@@ -165,7 +163,7 @@ module.exports = [
     },
     {
         command: ['gitclone'],
-        desc:"Download files from a GitHub repository",
+        desc: "Download files from a GitHub repository",
         operate: async ({ m, args, prefix, command, Tayc, reply, mess, }) => {
             if (!args[0])
                 return reply(`*GitHub link to clone?*\nExample :\n${prefix}${command} https://github.com/warano02/Tayc`);
