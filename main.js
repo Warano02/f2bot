@@ -22,6 +22,7 @@ const flags = require('emoji-flags');
 const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js');
 const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
 const { handleMessageRevocation, handleMessageEdit, storeMessage } = require('./src/utils/handler/HandleRevocation.js');
+const handleGroupMessage = require('./src/utils/handler/handleGroupMessage.js');
 
 /**
  * 
@@ -181,6 +182,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (fromGroup && m.body) {
             await handleBadwordDetection(context);
             await Antilink(context);
+            await handleGroupMessage(context)
         }
 
         // === Command handling ===
