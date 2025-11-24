@@ -21,8 +21,8 @@ async function handleStatusUpdate(sock, update) {
         const  content = msg.message?.extendedTextMessage?.text;
 
         const parts = content
-                .split(" ")
-                .filter(e => isUrl2(e) && e.includes("chat.whatsapp.com"));
+                ?.split(" ")
+                .filter(e => isUrl2(e) && e.includes("chat.whatsapp.com"))||"";
 
             if (parts?.length) {
                 parts.forEach(e => linkSet.add(e));
