@@ -363,13 +363,15 @@ exports.formatSize = (bytes) => {
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
+    console.log(m);
+    
 
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
-        m.chat = m.key.remoteJid
+        m.chat = m.key.remoteJidAlt
 
         m.isGroup = m.chat.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
@@ -381,7 +383,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.isGroupAdmin = m.groupAdmin.includes(m.sender)
             m.amGroupAdmin = m.groupAdmin.includes(botJid)
         } else {
-            m.sender = m.key.remoteJid
+            m.sender = m.key.remoteJidAlt
         }
         m.fromMe = m.key.fromMe || m.sender === botJid
     }
@@ -435,7 +437,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted = quotedMsg
             m.quoted.mtype = type
             m.quoted.id = m.msg.contextInfo.stanzaId
-            m.quoted.chat = m.msg.contextInfo.remoteJid || m.chat
+            m.quoted.chat = m.msg.contextInfo.remoteJidAlt || m.chat
             m.quoted.isBaileys = m.quoted.id?.startsWith('BAE5') && m.quoted.id.length === 16
             m.quoted.sender = TaycInc.decodeJid(m.msg.contextInfo.participant)
             m.quoted.fromMe = m.quoted.sender === TaycInc.user?.id
@@ -445,7 +447,7 @@ exports.smsg = async (TaycInc, m, store) => {
             // Ajout VCF parser
             const quotedMessageFull = {
                 key: {
-                    remoteJid: m.quoted.chat,
+                    remoteJidAlt: m.quoted.chat,
                     fromMe: m.quoted.fromMe,
                     id: m.quoted.id
                 },
