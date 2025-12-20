@@ -363,7 +363,6 @@ exports.formatSize = (bytes) => {
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
-    //console.log(m);
 
 
     let M = proto.WebMessageInfo
@@ -376,8 +375,7 @@ exports.smsg = async (TaycInc, m, store) => {
         m.isGroup = m.chat.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
             const groupMetadata = await TaycInc.groupMetadata(m.chat)
-         
-            
+
             m.groupMetadata = groupMetadata
             const participant = groupMetadata.participants.find(p => p.id === m.key.participant || p.lid === m.key.participant)
             m.sender = participant?.jid
@@ -425,7 +423,15 @@ exports.smsg = async (TaycInc, m, store) => {
         m.mentionedJid = m.msg?.contextInfo?.mentionedJid || []
 
         if (quoted) {
+
             let type = getContentType(quoted)
+
+            const altType = (/** @type {string} */ s) => {
+                return s[0].toUpperCase() + s.slice(1)
+            }
+            // console.log(m.msg, "\n\n", m.mtype?.[altType(m.mtype)], "\n\n", type);
+            console.log(m.msg.contextInfo.remoteJid);
+
 
             let quotedMsg = quoted[type]
 
@@ -439,7 +445,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted = quotedMsg
             m.quoted.mtype = type
             m.quoted.id = m.msg.contextInfo.stanzaId
-            m.quoted.chat = m.msg.contextInfo.remoteJidAlt || m.chat
+            m.quoted.chat = m.msg.contextInfo.remoteJid || m.chat
             m.quoted.isBaileys = m.quoted.id?.startsWith('BAE5') && m.quoted.id.length === 16
             m.quoted.sender = TaycInc.decodeJid(m.msg.contextInfo.participant)
             m.quoted.fromMe = m.quoted.sender === TaycInc.user?.id
