@@ -14,13 +14,35 @@ module.exports = [
         }
     },
     {
+        command: ['fullpp',"pp","setpp"],
+        desc: "Update User profil picture",
+        /**
+      * 
+      * @param {import ("../db/types").BotCommandContext} param0 
+      */
+        operate: async ({ Tayc, m, chatId,quoted, reply, isGroup, text }) => {
+            try {
+             if (!quoted) return reply(`*Please rply to an image using ${cmd}*`)
+            const mime = quoted.mtype
+            if (!mime) return reply("*The quoted message does not contain media. Please send or reply to an image, video, or gif.*")
+            if (/image/.test(mime)) {
+                const media = await quoted.download();
+                if(!Buffer.isBuffer(media))return reply("*Invalid Image Type*")
+                 Tayc.updateProfilePicture(Tayc.user.id, media, m);
+                return reply("*Profil picture update successfully*")
+            }
+            return reply(`*Please rply to an image using ${cmd}*`)
+            } catch (e) {
+                console.log(e);
+
+            }
+        }
+    },
+    {
         command: ["sticker", "stickers", "s"],
         desc: "Transform image to sticker",
-        /**
-         * 
-         * @param {import ("../db/types").BotCommandContext} param0 
-         */
-        operate: async ({ Tayc, quoted, reply, cmd,m }) => {
+
+        operate: async ({ Tayc, quoted, reply, cmd, m }) => {
             if (!quoted) return reply(`*Please rply to an image using ${cmd}*`)
             const mime = quoted.mtype
             if (!mime) return reply("*The quoted message does not contain media. Please send or reply to an image, video, or gif.*")

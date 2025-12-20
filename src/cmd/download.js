@@ -64,7 +64,6 @@ module.exports = [
             while (attempts < maxAttempts) {
                 try {
                     const { data } = await axios.get(`https://api-aswin-sparky.biz.id/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
-                    console.log(data);
 
                     if (data?.data?.video) {
                         await Tayc.sendMessage(m.chat, {
