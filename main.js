@@ -32,6 +32,7 @@ const handleGroupMessage = require('./src/utils/handler/handleGroupMessage.js');
  */
 async function handleMessages(Tayc, messageUpdate, store) {
     try {
+        console.log(Tayc.user.jid)
         const settings = GETSETTINGS();
         const COMMANDS = getCommands();
         const prefix = settings.prefix;

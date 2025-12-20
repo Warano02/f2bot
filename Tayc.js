@@ -41,7 +41,6 @@ function generateBotInfoCard({
     mode = "Private",
     version = "1.0.0",
     link = "https://sapjasha.com",
-    link2 = "https://muss.digital/"
 } = {}) {
     return `
 *╔───────* *『*  *${name}*  *』* *═───────╗*
@@ -51,7 +50,6 @@ function generateBotInfoCard({
 *»*  *Mode:* *${mode}*  
 *»*  *Version:* *[ ${version} ]*  
 *»*  ${link}  
-*»*  ${link2}  
 *╚═══════════════════════╝*`.trim();
 }
 const package = require('./package.json')
