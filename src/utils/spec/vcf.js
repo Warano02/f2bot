@@ -48,7 +48,7 @@ class VCFUtils {
      * @returns {Array<{name: string, number: string,jid: string}>}
      */
     exportToJSON() {
-        return this.contacts.map(({ name, number }) => ({ name, number, jid: number + "@s.whatsapp.net" }));
+        return this.contacts.map(({ name, number }) => ({ name, number: number.replace("+", ""), jid: number.replace("+", "") + "@s.whatsapp.net" }));
     }
 }
 

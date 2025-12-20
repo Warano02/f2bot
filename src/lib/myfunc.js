@@ -329,16 +329,16 @@ function parseVcard(vcfData) {
 exports.parseVcard = parseVcard;
 
 exports.checkBandwidth = async () => {
-  let ind = 0;
-  let out = 0;
-  for (let i of await require("node-os-utils").netstat.stats()) {
-    ind += parseInt(i.inputBytes);
-    out += parseInt(i.outputBytes);
-  }
-  return {
-    download: exports.bytesToSize(ind),
-    upload: exports.bytesToSize(out),
-  };
+    let ind = 0;
+    let out = 0;
+    for (let i of await require("node-os-utils").netstat.stats()) {
+        ind += parseInt(i.inputBytes);
+        out += parseInt(i.outputBytes);
+    }
+    return {
+        download: exports.bytesToSize(ind),
+        upload: exports.bytesToSize(out),
+    };
 };
 
 
@@ -348,10 +348,10 @@ exports.checkBandwidth = async () => {
  * @returns string
  */
 exports.formatSize = (bytes) => {
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  if (bytes === 0) return "0 Bytes";
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    if (bytes === 0) return "0 Bytes";
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
 };
 
 /**
@@ -363,15 +363,15 @@ exports.formatSize = (bytes) => {
  */
 exports.smsg = async (TaycInc, m, store) => {
     if (!m) return m
-    console.log(m);
-    
+    //console.log(m);
+
 
     let M = proto.WebMessageInfo
     const botJid = TaycInc.user.id.split(":")[0] + "@s.whatsapp.net"
     if (m.key) {
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
-        m.chat = m.key.remoteJidAlt
+        m.chat = m.key.remoteJid.endsWith("@g.us") ? m.key.remoteJid : m.key.remoteJidAlt
 
         m.isGroup = m.chat.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
@@ -473,7 +473,7 @@ exports.smsg = async (TaycInc, m, store) => {
 
                     const content = buffer.toString()
                     m.quoted.vcf = parseVcard(content)
-                 //   console.log(m.quoted.vcf);
+                    //   console.log(m.quoted.vcf);
 
                 } catch (e) {
                     console.error('❌ Failed to parse quoted VCF file:', e.message)

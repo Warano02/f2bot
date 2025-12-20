@@ -303,11 +303,11 @@ module.exports = [
         desc: "Create a vcf file from a members group number",
         operate: async ({ Tayc, m, reply }) => {
             if (!m.isGroup) return reply("This command is only for group");
-            let details = m.groupMetadata
+            let details = m.groupMetadata 
             let vcard = "";
             let noPort = 0;
             for (let a of details.participants) {
-                vcard += `BEGIN:VCARD\nVERSION:3.0\nFN:[${noPort++}] +${a.jid.split("@")[0]}\nTEL;type=CELL;type=VOICE;waid=${a.jid.split("@")[0]}:+${a.jid.split("@")[0]}\nEND:VCARD\n`;
+                vcard += `BEGIN:VCARD\nVERSION:3.0\nFN:[${noPort++}] +${a.phoneNumber.split("@")[0]}\nTEL;type=CELL;type=VOICE;waid=${a.phoneNumber.split("@")[0]}:+${a.phoneNumber.split("@")[0]}\nEND:VCARD\n`;
             }
             let nmfilect = "./contacts.vcf";
             fs.writeFileSync(nmfilect, vcard.trim());

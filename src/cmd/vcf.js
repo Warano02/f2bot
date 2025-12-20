@@ -49,7 +49,8 @@ module.exports = [
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             let tab = vcfUtils.exportToJSON()
-            const list = tab.map((el, i) => ` 👤: *${el.name}* \n\n *N°*: @${el.number}\n`).join("\n")
+
+            const list = tab.map((el, i) => ` 👤: *${el.name}* \n *N°* : @${el.number}\n\n`).join("\n")
             const tags = tab.map(e => e.jid)
             //  console.log(tags);
 
