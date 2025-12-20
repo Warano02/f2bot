@@ -39,7 +39,7 @@ function generateBotInfoCard({
     platform = "Panel",
     prefix = ".",
     mode = "Private",
-    version = "1.0.0",
+    version = "1.2.0",
     link = "https://sapjasha.com",
 } = {}) {
     return `
