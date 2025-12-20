@@ -80,7 +80,7 @@ async function storeMessage(message, isUser) {
             mediaType,
             mediaPath,
             sender,
-            group: message.key.remoteJidAlt.endsWith('@g.us') ? message.key.remoteJidAlt : null,
+            group: message.key.remoteJid?.endsWith('@g.us') ? message.key.remoteJid : null,
             timestamp: new Date().toISOString(),
             rawMessage: message // ajouté ici pour pouvoir reply au message supprimé
         });

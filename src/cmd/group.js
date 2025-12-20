@@ -246,7 +246,7 @@ module.exports = [
         command: ['promote'],
         desc: "Promote an user",
         operate: async (context) => {
-            const { m, isBotAdmin, amGroupAdmin, react, Tayc, reply } = context;
+            const { m, isBotAdmin, amGroupAdmin, react,text, Tayc, reply } = context;
             if (!m.isGroup) return reply("*This command is only for group*");
             if (!amGroupAdmin) return reply("*I need to be an admin first*");
             if (!isBotAdmin) return react("🙄")

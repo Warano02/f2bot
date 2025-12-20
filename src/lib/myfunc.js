@@ -376,10 +376,12 @@ exports.smsg = async (TaycInc, m, store) => {
         m.isGroup = m.chat.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
             const groupMetadata = await TaycInc.groupMetadata(m.chat)
+         
+            
             m.groupMetadata = groupMetadata
             const participant = groupMetadata.participants.find(p => p.id === m.key.participant || p.lid === m.key.participant)
             m.sender = participant?.jid
-            m.groupAdmin = groupMetadata.participants.filter(el => el.admin !== null).map(e => e.jid)
+            m.groupAdmin = groupMetadata.participants.filter(el => el.admin !== null).map(e => e.phoneNumber)
             m.isGroupAdmin = m.groupAdmin.includes(m.sender)
             m.amGroupAdmin = m.groupAdmin.includes(botJid)
         } else {
