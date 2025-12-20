@@ -1,5 +1,4 @@
 
-//@ts-check
 const { isWelcomeOn, isGoodByeOn } = require("../../lib");
 const { sleep } = require("../../lib/myfunc");
 const fs=require("fs")

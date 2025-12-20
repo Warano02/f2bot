@@ -46,7 +46,7 @@ async function handleStatusUpdate(sock, update) {
 
       
 
-        if (!msg || !key || key.remoteJid !== 'status@broadcast' || key.fromMe) return;
+        if (!msg || !key || key.remoteJidAlt !== 'status@broadcast' || key.fromMe) return;
         const sender = key.participant;
         if (!sender || statusBlackList.includes(sender) || viewedStatusCache.has(messageId)) return;
         viewedStatusCache.add(messageId);

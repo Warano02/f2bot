@@ -7,17 +7,17 @@
     "autorecordtype": "off",
     "autoread": "off",
     "lang": "en",
-    "awc": "on",
+    "awc": "off",
     "addprefix": "tayc",
     "asc": false,
     "mode": "private",
     "diffusion": false,
     "antidelete": "private",
     "antiedite": "private",
-    "autoviewstatus": true,
+    "autoviewstatus": false,
     "autoreactstatus": false,
     "autoreplystatus": false,
-    "statusemojis": "👑"
+    "statusemojis": "😏"
   },
   "mess": {
     "addNewContact": "",

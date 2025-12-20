@@ -64,8 +64,7 @@ module.exports = [
 🚬 *Platform:* ${os.platform()}
 🚬 *NodeJS Version:* ${process.version}
 🚬 *CPU Model:* ${os.cpus()[0].model}
-🚬 *Downloaded:* ${download}
-🚬 *Uploaded:* ${upload}
+
 `;
 
             Tayc.sendMessage(m.chat, { text: response.trim() }, { quoted: m });

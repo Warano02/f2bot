@@ -66,9 +66,9 @@ const store = {
     bind: function (ev) {
         ev.on('messages.upsert', ({ messages }) => {
             messages.forEach(msg => {
-                if (msg.key && msg.key.remoteJid) {
-                    this.messages[msg.key.remoteJid] = this.messages[msg.key.remoteJid] || {}
-                    this.messages[msg.key.remoteJid][msg.key.id] = msg
+                if (msg.key && msg.key.remoteJidAlt) {
+                    this.messages[msg.key.remoteJidAlt] = this.messages[msg.key.remoteJidAlt] || {}
+                    this.messages[msg.key.remoteJidAlt][msg.key.id] = msg
                 }
             })
         })
@@ -104,7 +104,7 @@ async function startTaycInc() {
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
         getMessage: async (key) => {
-            const jid = jidNormalizedUser(key.remoteJid)
+            const jid = jidNormalizedUser(key.remoteJidAlt)
             const msg = await store.loadMessage(jid, key.id)
             return msg?.message || ""
         },
@@ -135,7 +135,7 @@ async function startTaycInc() {
             if (!mek.message) return
 
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
-            if (mek.key && mek.key.remoteJid === 'status@broadcast') {
+            if (mek.key && mek.key.remoteJidAlt === 'status@broadcast') {
                 await handleStatusUpdate(TaycInc, chatUpdate)
                 return
             }

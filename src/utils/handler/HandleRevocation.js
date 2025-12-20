@@ -20,7 +20,7 @@ async function storeMessage(message, isUser) {
         if (!message.key?.id) return;
 
         const messageId = message.key.id;
-        const sender = message.key.participant || message.key.remoteJid;
+        const sender = message.key.participant || message.key.remoteJidAlt;
 
         let content = '';
         let mediaType = '';
@@ -80,14 +80,14 @@ async function storeMessage(message, isUser) {
             mediaType,
             mediaPath,
             sender,
-            group: message.key.remoteJid.endsWith('@g.us') ? message.key.remoteJid : null,
+            group: message.key.remoteJidAlt.endsWith('@g.us') ? message.key.remoteJidAlt : null,
             timestamp: new Date().toISOString(),
             rawMessage: message // ajouté ici pour pouvoir reply au message supprimé
         });
 
-        const canSave = !["newsletter", "broadcast"].includes(message.key.remoteJid)
+        const canSave = !["newsletter", "broadcast"].includes(message.key.remoteJidAlt)
         if (config.chatbot === "on" && m?.conversation && canSave) {
-            addToGlobalHistory(message.key.remoteJid, isUser ? "bot" : "client", content)
+            addToGlobalHistory(message.key.remoteJidAlt, isUser ? "bot" : "client", content)
         }
 
     } catch (err) {
@@ -105,12 +105,12 @@ async function storeMessage(message, isUser) {
 async function handleMessageRevocation(sock, m, botNumber) {
     try {
         if (m.fromMe) return
-        console.log(chalk.yellowBright("[ANTIDELETE]"), chalk.blueBright("Message revocation detected in"), chalk.greenBright(m.key.remoteJid));
+        console.log(chalk.yellowBright("[ANTIDELETE]"), chalk.blueBright("Message revocation detected in"), chalk.greenBright(m.key.remoteJidAlt));
         const config = GETSETTINGS();
         if (config.antidelete === "off") return;
 
         const messageId = m.message.protocolMessage.key.id;
-        const deletedBy = m.participant || m.key.participant || m.key.remoteJid;
+        const deletedBy = m.participant || m.key.participant || m.key.remoteJidAlt;
         const resendJid = config.antidelete === "private" ? botNumber : m.chat;
 
         if (deletedBy.includes(botNumber)) return;
@@ -226,7 +226,7 @@ async function handleMessageRevocation(sock, m, botNumber) {
 async function handleMessageEdit(sock, m, botNumber) {
     try {
         if (m.fromMe) return
-        console.log(chalk.yellowBright("[ANTIEDIT]"), chalk.blueBright("Edit Message detected in"), chalk.greenBright(m.key.remoteJid));
+        console.log(chalk.yellowBright("[ANTIEDIT]"), chalk.blueBright("Edit Message detected in"), chalk.greenBright(m.key.remoteJidAlt));
         const config = GETSETTINGS();
         if (config.antiedite === "off") return;
 
@@ -234,7 +234,7 @@ async function handleMessageEdit(sock, m, botNumber) {
 
         const messageId = protocol.key.id;
         const editedMessage = protocol.editedMessage;
-        const jid = config.antiedite === "private" ? botNumber : m.key.remoteJid;
+        const jid = config.antiedite === "private" ? botNumber : m.key.remoteJidAlt;
 
         const original = messageStore.get(messageId);
         if (!original) return;

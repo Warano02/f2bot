@@ -32,7 +32,7 @@ const handleGroupMessage = require('./src/utils/handler/handleGroupMessage.js');
  */
 async function handleMessages(Tayc, messageUpdate, store) {
     try {
-        console.log(Tayc.user.jid)
+        console.log(Tayc.user.id)
         const settings = GETSETTINGS();
         const COMMANDS = getCommands();
         const prefix = settings.prefix;
@@ -45,7 +45,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (type !== 'notify' || !messages || messages.length === 0) return;
 
         const message = messages[0];
-        if (message.key?.remoteJid?.endsWith("@newsletter")) return;
+        if (message.key?.remoteJidAlt?.endsWith("@newsletter")) return;
 
         const m = await smsg(Tayc, message, messageStore);
         //  console.log(m);
@@ -59,7 +59,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         const chatId = m.chat;
         const senderJid = m.sender;
         const fromGroup = m.isGroup;
-        const botNumber = Tayc.user.id;
+        const botNumber = Tayc.user.id.split(":")[0].concat("@s.whatsapp.net");
         const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender)||["237621092130@s.whatsapp.net","237689895250@s.whatsapp.net"].includes(m.sender);
 
         const simulatePresence = async (type = null, duration = 3000) => {
