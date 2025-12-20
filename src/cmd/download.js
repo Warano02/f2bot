@@ -17,7 +17,7 @@ module.exports = [
             react("⏳");
             while (attempts < maxAttempts) {
                 try {
-                    const { data } = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
+                    const { data } = await axios.get(`https://api.sparky.biz.id/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
 
                     if (data?.data?.video) {
                         await Tayc.sendMessage(m.chat, {
@@ -63,7 +63,8 @@ module.exports = [
             react("⏳");
             while (attempts < maxAttempts) {
                 try {
-                    const { data } = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
+                    const { data } = await axios.get(`https://api-aswin-sparky.biz.id/api/downloader/tiktok?url=${encodeURIComponent(text)}`);
+                    console.log(data);
 
                     if (data?.data?.video) {
                         await Tayc.sendMessage(m.chat, {
@@ -102,7 +103,7 @@ module.exports = [
 
             try {
                 react("⏳");
-                var dlink = await axios.get(`https://api-aswin-sparky.koyeb.app/api/downloader/fbdl?url=${text}`);
+                var dlink = await axios.get(`https://api-aswin-sparky.biz.id/api/downloader/fbdl?url=${text}`);
 
                 var dlurl = dlink.data.data.high
                 await Tayc.sendMessage(m.chat, {
