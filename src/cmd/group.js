@@ -178,7 +178,7 @@ module.exports = [
             try {
                 let groupInvite = await Tayc.groupInviteCode(m.chat); console.log(m.groupMetadata.owner);
 
-                let groupOwner = m.groupMetadata.participants.filter(e => e.admin === "superadmin")[0].jid;
+                let groupOwner = m.groupMetadata.participants.filter(e => e.admin === "superadmin")[0].phoneNumber;
                 let groupLink = `https://chat.whatsapp.com/${groupInvite}`;
                 let memberCount = m.groupMetadata.participants.length;
 
@@ -278,8 +278,8 @@ module.exports = [
                 const t = m?.groupMetadata
                 if (!t) return react("❌")
                 let text = `*TAGGED BY:* ${m.pushName}\n\n`
-                text += t.participants.map((e, i) => i + 1 + " @" + e.jid.split('@')[0]).join("\n")
-                reply(text, t.participants.map(e => e.jid))
+                text += t.participants.map((e, i) => i + 1 + " @" + e.phoneNumber.split('@')[0]).join("\n")
+                reply(text, t.participants.map(e => e.phoneNumber))
             } catch (e) {
                 console.log(e)
             }
@@ -292,7 +292,7 @@ module.exports = [
             try {
                 if (!isGroup) return reply("❌ *This command is only useful in the group*")
                 const t = m?.groupMetadata
-                reply(text || '', t.participants.map(e => e.jid))
+                reply(text || '', t.participants.map(e => e.phoneNumber))
             } catch (e) {
                 console.log(e)
             }

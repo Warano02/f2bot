@@ -14,24 +14,24 @@ module.exports = [
         }
     },
     {
-        command: ['fullpp',"pp","setpp"],
+        command: ['fullpp', "pp", "setpp"],
         desc: "Update User profil picture",
         /**
       * 
       * @param {import ("../db/types").BotCommandContext} param0 
       */
-        operate: async ({ Tayc, m, chatId,quoted, reply, isGroup, text }) => {
+        operate: async ({ Tayc, m, chatId, quoted, reply, isGroup, text }) => {
             try {
-             if (!quoted) return reply(`*Please rply to an image using ${cmd}*`)
-            const mime = quoted.mtype
-            if (!mime) return reply("*The quoted message does not contain media. Please send or reply to an image, video, or gif.*")
-            if (/image/.test(mime)) {
-                const media = await quoted.download();
-                if(!Buffer.isBuffer(media))return reply("*Invalid Image Type*")
-                 Tayc.updateProfilePicture(Tayc.user.id, media, m);
-                return reply("*Profil picture update successfully*")
-            }
-            return reply(`*Please rply to an image using ${cmd}*`)
+                if (!quoted) return reply(`*Please rply to an image using ${cmd}*`)
+                const mime = quoted.mtype
+                if (!mime) return reply("*The quoted message does not contain media. Please send or reply to an image, video, or gif.*")
+                if (/image/.test(mime)) {
+                    const media = await quoted.download();
+                    if (!Buffer.isBuffer(media)) return reply("*Invalid Image Type*")
+                    Tayc.updateProfilePicture(Tayc.user.id, media, m);
+                    return reply("*Profil picture update successfully*")
+                }
+                return reply(`*Please rply to an image using ${cmd}*`)
             } catch (e) {
                 console.log(e);
 
@@ -130,6 +130,18 @@ module.exports = [
                 settings.lang = args[0]
                 saveNewSetting({ ...Settings, settings })
                 reply(`*✅ Language set to ${args[0]} successfully !*`);
+            } catch { }
+        }
+    },
+    {
+        command: ["anticall",],
+        desc: "Set Anticall",
+        operate: async ({ reply, args, Settings, settings, saveNewSetting }) => {
+            try {
+                if (!["on", "of"].includes(args[0])) return reply(`❌ Invalid argument. Please use "en" or "fr".`)
+                settings.anticall = args[0]
+                saveNewSetting({ ...Settings, settings })
+                reply(`*✅ Anticall ${args[0]=="on"?"enable":"disabled"} successfully !*`);
             } catch { }
         }
     },

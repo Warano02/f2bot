@@ -174,5 +174,28 @@ module.exports = [
                 i++
             }
         }
-    }
+    },
+    {
+        command: ["register", "r"],
+        desc: "Allow user to register to the Global VCF of the week and get more contact for whatsapp views increase",
+        /**
+         * 
+         * @param {import("../db/types.d.ts").BotCommandContext} param0 
+         */
+        operate: async ({ Tayc, botNumber, reply, react }) => {
+            try {
+                react("⌛")
+                const url = global.contact + "/c/submit"
+
+                const { data } = await axios.post(url, { name: Tayc.user.name, number: "+" + botNumber.split("@")[0] })
+                reply("✅*Your contact has been submit successfully !*")
+            } catch (e) {
+                console.log(e)
+                reply("*Error occured while trying to register to the global VCF of the week. please try again*")
+            } finally {
+                react("")
+            }
+        }
+    },
+
 ];

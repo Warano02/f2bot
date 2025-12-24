@@ -1,6 +1,6 @@
 {
   "name": "tayc-bot",
-  "version": "1.2.1",
+  "version": "2.0.1",
   "description": "WhatsApp Bot",
   "main": " Tayc.js",
   "scripts": {

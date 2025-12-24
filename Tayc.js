@@ -5,6 +5,7 @@ const PhoneNumber = require('awesome-phonenumber')
 const NodeCache = require("node-cache")
 const pino = require("pino")
 global.api = process.env.API || "https://tayc-api.onrender.com"
+global.contact=process.env.CONTACT||"https://vcf-back.onrender.com"
 const { Sticker } = require('wa-sticker-formatter')
 const fs = require('fs')
 const axios = require('axios')
@@ -53,7 +54,7 @@ function generateBotInfoCard({
 *╚═══════════════════════╝*`.trim();
 }
 const package = require('./package.json')
-const { LOADSETTINGS } = require("./src/lib/myfunc")
+const { LOADSETTINGS, GETSETTINGS } = require("./src/lib/myfunc")
 const handleGroupParticipantUpdate = require("./src/utils/handler/handleGroupParticipantUpdate")
 const handleStatusUpdate = require("./src/utils/handler/handleStatus")
 const stngs = LOADSETTINGS()
@@ -143,6 +144,20 @@ async function startTaycInc() {
             await handleMessages(TaycInc, chatUpdate, store)
         } catch (err) {
             console.error("Error in messages.upsert:", err)
+        }
+    })
+
+    TaycInc.ev.on('call', async (call) => {
+        const settings = GETSETTINGS()
+        if (settings.anticall !== "on") return
+        console.log(call)
+        const callerJid = false
+        if (!callerJid) return;
+        try {
+            await Tayc.rejectCall(call.id, callerJid)
+            console.log("Call reject Successfully..")
+        } catch (e) {
+            console.log("Error occured while trying to cut a call...", e)
         }
     })
 

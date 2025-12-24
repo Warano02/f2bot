@@ -370,9 +370,9 @@ exports.smsg = async (TaycInc, m, store) => {
     if (m.key) {
         m.id = m.key.id
         m.isBaileys = m.id.startsWith('BAE5') && m.id.length === 16
-        m.chat = m.key.remoteJid.endsWith("@g.us") ? m.key.remoteJid : m.key.remoteJidAlt
+        m.chat = m.key.remoteJid?.endsWith("@g.us") ? m.key.remoteJid : m.key.remoteJidAlt
 
-        m.isGroup = m.chat.endsWith('@g.us')
+        m.isGroup = m.chat?.endsWith('@g.us')
         if (m.isGroup && m.key.participant) {
             const groupMetadata = await TaycInc.groupMetadata(m.chat)
 

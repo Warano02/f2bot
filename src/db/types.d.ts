@@ -72,6 +72,7 @@ export type Settings = {
   autoread: "on" | "off";
   lang: "en" | "fr" | string;
   awc: "on" | "off";
+  anticall: "on" | "off";
   addprefix: string;
   asc: boolean;
   mode: "private" | "public";

@@ -1,6 +1,6 @@
 {
   "settings": {
-    "prefix": "?",
+    "prefix": ".",
     "chatbot": "off",
     "menustyle": "1",
     "training": "off",
@@ -14,9 +14,10 @@
     "diffusion": false,
     "antidelete": "private",
     "antiedite": "private",
-    "autoviewstatus": false,
+    "autoviewstatus": true,
     "autoreactstatus": false,
     "autoreplystatus": false,
+    "anticall": "on",
     "statusemojis": "😏"
   },
   "mess": {
