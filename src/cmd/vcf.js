@@ -1,7 +1,7 @@
 const axios = require("axios");
 const VCFUTILS = require("../utils/spec/vcf");
 const { sleep } = require("../lib/myfunc.js");
-
+const fs=require("fs")
 module.exports = [
     {
         command: ["removeduplicatecontact", "rdc"],
@@ -178,17 +178,13 @@ module.exports = [
     {
         command: ["register", "r"],
         desc: "Allow user to register to the Global VCF of the week and get more contact for whatsapp views increase",
-        /**
-         * 
-         * @param {import("../db/types.d.ts").BotCommandContext} param0 
-         */
-        operate: async ({ Tayc, botNumber, reply, react }) => {
+        operate: async ({ Tayc, m, text, reply, react }) => {
+            if (m.isGroup) return reply("*❌This command is only avaible in the private chat*")
             try {
                 react("⌛")
                 const url = global.contact + "/c/submit"
-
-                const { data } = await axios.post(url, { name: Tayc.user.name, number: "+" + botNumber.split("@")[0] })
-                reply("✅*Your contact has been submit successfully !*")
+                const { data } = await axios.post(url, { name: m.pushName, number: m.sender.split("@")[0] })
+                reply(`✅*Hey ${m.pushName} your contact has been submit successfully !* I'll let you  know when the file will be drop`)
             } catch (e) {
                 console.log(e)
                 reply("*Error occured while trying to register to the global VCF of the week. please try again*")
@@ -197,5 +193,36 @@ module.exports = [
             }
         }
     },
+    {
+        command: ["gaincontact", "gaincontacts", "gain", "g"],
+        desc: "Allows you to download the weekly contact list to increase WhatsApp visibility",
+        operate: async ({ Tayc, m, react, reply }) => {
+            try {
+                react("⌛")
+                let vcard = ""
+                const { data } = await axios.get(global.contact + "/c/getall?phone=" + `${m.sender.split("@")[0]}`)
+                const /**@type [{name:string,number:string}] */ contacts = data.contacts
+                contacts.forEach(c => vcard += `BEGIN:VCARD\nVERSION:3.0\nFN: ${c.name}\nTEL;type=CELL;type=VOICE;waid=${c.number}:+${c.number}\nEND:VCARD\n`)
+                let nmfilect = "./contacts.vcf";
+                fs.writeFileSync(nmfilect, vcard.trim());
+                await sleep(1000);
+                Tayc.sendMessage(
+                    m.chat,
+                    {
+                        document: fs.readFileSync(nmfilect),
+                        mimetype: "text/vcard",
+                        fileName: "Contact.vcf",
+                        caption: `*There actual ${contacts.length} contacts registred*`,
+                    },
+                    { ephemeralExpiration: 86400, quoted: m }
+                );
+                fs.unlinkSync(nmfilect);
+                react("")
+            } catch (e) {
+                react("❌")
+                reply(e.response?.data?.msg || "*Error occured while trying to get contacts*")
+            }
+        }
+    }
 
 ];

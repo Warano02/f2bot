@@ -383,7 +383,7 @@ exports.smsg = async (TaycInc, m, store) => {
             m.isGroupAdmin = m.groupAdmin.includes(m.sender)
             m.amGroupAdmin = m.groupAdmin.includes(botJid)
         } else {
-            m.sender = m.key.remoteJidAlt
+            m.sender = m.key.fromMe ? botJid : m.key.remoteJidAlt
         }
         m.fromMe = m.key.fromMe || m.sender === botJid
     }
