@@ -47,9 +47,9 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (message.key?.remoteJidAlt?.endsWith("@newsletter")) return;
 
         const m = await smsg(Tayc, message, messageStore);
-        //  console.log(m);
+          console.log(m?.sender);
 
-        if (!m || !m.body | m.sender.includes("status")) return;
+        if (!m || !m.body || m.sender?.includes("status")) return;
         if (!m.isGroup) {
             global.lastreceivemessage = Date.now()
             console.log('last receive messge', global.lastreceivemessage);
