@@ -102,9 +102,9 @@ module.exports = [
 
             try {
                 react("⏳");
-                var dlink = await axios.get(`https://api.sparky.biz.id/api/downloader/fbdl?url=${text}`);
+                var dlink = await axios.get(`https://okatsu-rolezapiiz.vercel.app/downloader/facebook?url=${text}`);
 
-                var dlurl = dlink.data.data.high                
+                var dlurl = dlink.data.result.video               
                 await Tayc.sendMessage(m.chat, {
                     video: { url: dlurl, }
                 }, {
