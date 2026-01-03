@@ -102,9 +102,9 @@ module.exports = [
 
             try {
                 react("⏳");
-                var dlink = await axios.get(`https://api-aswin-sparky.biz.id/api/downloader/fbdl?url=${text}`);
+                var dlink = await axios.get(`https://api.sparky.biz.id/api/downloader/fbdl?url=${text}`);
 
-                var dlurl = dlink.data.data.high
+                var dlurl = dlink.data.data.high                
                 await Tayc.sendMessage(m.chat, {
                     video: { url: dlurl, }
                 }, {

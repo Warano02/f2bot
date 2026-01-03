@@ -10,7 +10,7 @@
     "awc": "off",
     "addprefix": "tayc",
     "asc": false,
-    "mode": "public",
+    "mode": "private",
     "diffusion": false,
     "antidelete": "private",
     "antiedite": "private",
