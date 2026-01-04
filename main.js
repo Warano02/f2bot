@@ -48,12 +48,10 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (message.key?.remoteJidAlt?.endsWith("@newsletter")) return;
 
         const m = await smsg(Tayc, message, messageStore);
-        console.log(m?.sender);
 
         if (!m || !m.body || m.sender?.includes("status")) return;
         if (!m.isGroup) {
             global.lastreceivemessage = Date.now()
-            console.log('last receive messge', global.lastreceivemessage);
         }
 
         const chatId = m.chat;
@@ -77,8 +75,6 @@ async function handleMessages(Tayc, messageUpdate, store) {
             await Tayc.readMessages([m.key]);
         }
 
-        // === Autoread ===
-
         if (
             (["private", "pm"].includes(settings.autoread) && !fromGroup && !m.fromMe) ||
             (settings.autoread === "group" && fromGroup && !m.fromMe) ||
@@ -86,7 +82,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         ) {
             await markAsRead();
         }
-        // === Simulated record or type ===
+
         if (
             (["private", "pm"].includes(settings.autorecordtype) && !fromGroup && !m.fromMe) ||
             (settings.autorecordtype === "group" && fromGroup && !m.fromMe) ||
@@ -95,7 +91,6 @@ async function handleMessages(Tayc, messageUpdate, store) {
             await simulatePresence();
         }
 
-        // === UTILITIES ===
         const reply = (text, mentions = []) => Tayc.sendMessage(chatId, { text, mentions }, { quoted: m });
         const sendText = async (text) => await Tayc.sendMessage(chatId, { text });
         const sendPrivate = async (text, mentions = []) => await Tayc.sendMessage(botNumber, { text, mentions })
@@ -104,22 +99,18 @@ async function handleMessages(Tayc, messageUpdate, store) {
 
         const deleteM = async () => { try { await Tayc.sendMessage(chatId, { delete: m.key }); } catch { } }
 
-        // === Receive contact ===
         if (["contactMessage", "contactsArrayMessage"].includes(m?.mtype)) return handleContactDetected(Tayc, m, settings.awc, botContact, markAsRead);
 
         await storeMessage(m, m.fromMe);
 
-        // === Message revoked ===
         if (m.mtype === 'protocolMessage' && m.message?.protocolMessage?.type === 0) return handleMessageRevocation(Tayc, m, botNumber);
 
 
-        // === Edit message ===
         if (m.message?.protocolMessage?.type === 14) return handleMessageEdit(Tayc, message, botNumber);
 
         if (m?.mtype === "protocolMessage") return
-        logMessage({ number: m.sender?.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
+        if (process.env.NODE_ENV === 'development') logMessage({ number: m.sender?.split("@")[0], name: m.pushName, messageType: m.mtype, chatId, text: m.body });
 
-        // === Build context ===
         /**@type {import("./src/db/types.d.ts").BotCommandContext} */
         const context = {
             sendPrivate,// Send message private to the bot admin
@@ -169,24 +160,20 @@ async function handleMessages(Tayc, messageUpdate, store) {
         };
 
 
-        // === When user where bot have send message respond ===
         if (addQeu.has(chatId) && !m.fromMe) return handleAddUserResponse(context)
 
-        // === Chatbot mode ===
         if (!m.body.startsWith(prefix) && !fromGroup && settings.chatbot === "on") {
             await handleChatbotResponse(context);
             return;
         }
 
 
-        // === Antilink / Badwords ===
         if (fromGroup && m.body) {
             await handleBadwordDetection(context);
             await Antilink(context);
             await handleGroupMessage(context)
         }
 
-        // === Command handling ===
         if (m.body.startsWith(prefix) || m.sticker) {
             const isCmd = StickerDB.get(m.sticker)
 
@@ -507,7 +494,6 @@ const backUpGroups = async () => {
 setInterval(backUpGroups, 1000 * 60 * 60 * 2)
 
 
-// Instead, export the handlers along with handleMessages
 module.exports = {
     handleMessages,
     ScheduledMessages,
