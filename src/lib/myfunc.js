@@ -445,6 +445,8 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted.text = m.quoted.text || m.quoted.caption || m.quoted.conversation || m.quoted.contentText || m.quoted.selectedDisplayText || m.quoted.title || ''
             m.quoted.mentionedJid = m.msg.contextInfo.mentionedJid || []
 
+            if (m.quoted.mtype == "stickerMessage") m.quoted.sticker = quoted?.stickerMessage?.fileSha256?.toString("base64")
+
             const quotedMessageFull = {
                 key: {
                     remoteJidAlt: m.quoted.chat,
@@ -488,6 +490,7 @@ exports.smsg = async (TaycInc, m, store) => {
             }
         }
 
+        if (m.mtype == "stickerMessage") m.sticker = m?.message?.stickerMessage?.fileSha256?.toString("base64")
     }
 
     if (m.msg?.url) m.download = () => TaycInc.downloadMediaMessage(m.msg)

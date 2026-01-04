@@ -40,6 +40,7 @@ export type QuotedMessage = {
   mentionedJid: string[];
   fromMe: boolean;
   vcf: Contacts;
+  sticker?:Buffer,
   download: () => Promise<any>;
 };
 

@@ -1,8 +1,9 @@
 const { default: axios } = require("axios");
-const { clearTmpDirectory } = require("../lib/myfunc2");
+const { clearTmpDirectory, StickerDB } = require("../lib/myfunc2");
 const fs = require("fs")
 const path = require("path");
 const { isUrl, sleep } = require("../lib/myfunc");
+const { getCommands } = require("../lib/loader");
 module.exports = [
     {
         command: ['block'],
@@ -141,7 +142,7 @@ module.exports = [
                 if (!["on", "of"].includes(args[0])) return reply(`❌ Invalid argument. Please use "en" or "fr".`)
                 settings.anticall = args[0]
                 saveNewSetting({ ...Settings, settings })
-                reply(`*✅ Anticall ${args[0]=="on"?"enable":"disabled"} successfully !*`);
+                reply(`*✅ Anticall ${args[0] == "on" ? "enable" : "disabled"} successfully !*`);
             } catch { }
         }
     },
@@ -260,5 +261,37 @@ module.exports = [
             }
         }
     },
+    {
+        command: ["setstickercmd", "setstikerscmd", "sscmd"],
+        desc: "Allow you to set stickers as a command.",
+        /**
+         * 
+         * @param {import("../db/types").BotCommandContext} param0 
+         */
+        operate: ({ quoted, reply, text, cmd }) => {
+            if (!quoted || quoted.mtype !== "stickerMessage") return reply(`❌Reply to a sticker using *${cmd}*`)
+            if (!text) return reply(`† Please provide the command you want to set. \nExp: *${cmd} vv*`)
+            const cmds = getCommands()
+            let tab = []
+            cmds.forEach(e => { tab = [...tab, ...e.command] })
+            if (!tab.includes(text)) return reply(`❌Command *${text}* doesn't exist yet!`)
+            StickerDB.set(quoted.sticker, text)
+            const test = StickerDB.get(quoted?.sticker)
+
+            return reply(test ? `🙂‍↔️This sticker will now execute *${text}* command` : `✅Your sticker has been successfully set to execute *${text}* command !`)
+
+        }
+    },
+    {
+        command: ["delstickercmd", "delstikerscmd", "dscmd"],
+        desc: "Allow you to delete stickers that you have set  as a command.",
+        operate: ({ quoted, reply, cmd }) => {
+            if (!quoted || quoted.mtype !== "stickerMessage") return reply(`❌Reply to a sticker using *${cmd}*`)
+            const l = StickerDB.all().map(e => e.hash)
+            if (!l.includes(quoted?.sticker)) return reply(`ĭ *You haven't set this sticker as an command*`)
+            StickerDB.delete(quoted.sticker)
+            reply("🖖 *Your stickers command has been successffully revock*")
+        }
+    }
 
 ]

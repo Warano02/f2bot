@@ -6,6 +6,7 @@ const { fromBuffer } = require("file-type");
 const fs = require("fs");
 const fsp = require("fs/promises");
 const child_process = require("child_process");
+const FILE = path.join(__dirname, "../db/stickerCmds.json");
 
 const { unlink } = fsp;
 
@@ -121,6 +122,55 @@ exports.buffergif = async (image) => {
 	]);
 	return buffer;
 };
+
+
+const ensureFile = () => {
+	if (!fs.existsSync(FILE)) {
+		fs.mkdirSync(path.dirname(FILE), { recursive: true });
+		fs.writeFileSync(FILE, JSON.stringify([], null, 2));
+	}
+}
+const read = () => {
+	ensureFile();
+	return JSON.parse(fs.readFileSync(FILE, "utf8"));
+}
+
+const write = (data) => {
+	fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
+}
+
+class StickerDB {
+	get(hash) {
+		return read().find(e => e.hash === hash) || null;
+	}
+
+	set(hash, command) {
+		const data = read();
+		const index = data.findIndex(e => e.hash === hash);
+
+		if (index !== -1) {
+			data[index].command = command;
+		} else {
+			data.push({
+				hash,
+				command,
+				createdAt: new Date().toISOString()
+			});
+		}
+
+		write(data);
+	}
+
+	delete(hash) {
+		write(read().filter(e => e.hash !== hash));
+	}
+
+	all() {
+		return read();
+	}
+};
+
+exports.StickerDB = new StickerDB()
 
 /**
  * 
