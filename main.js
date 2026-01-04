@@ -23,6 +23,7 @@ const handleQuotedMessage = require('./src/utils/handler/handleQuotedMessage.js'
 const { handleBadwordDetection, Antilink } = require('./src/utils/handler/AntiX.js');
 const { handleMessageRevocation, handleMessageEdit, storeMessage } = require('./src/utils/handler/HandleRevocation.js');
 const handleGroupMessage = require('./src/utils/handler/handleGroupMessage.js');
+const { StickerDB } = require('./src/lib/myfunc2.js');
 
 /**
  * 
@@ -47,7 +48,7 @@ async function handleMessages(Tayc, messageUpdate, store) {
         if (message.key?.remoteJidAlt?.endsWith("@newsletter")) return;
 
         const m = await smsg(Tayc, message, messageStore);
-          console.log(m?.sender);
+        console.log(m?.sender);
 
         if (!m || !m.body || m.sender?.includes("status")) return;
         if (!m.isGroup) {
@@ -186,7 +187,9 @@ async function handleMessages(Tayc, messageUpdate, store) {
         }
 
         // === Command handling ===
-        if (m.body.startsWith(prefix)) {
+        if (m.body.startsWith(prefix) || m.sticker) {
+            const isCmd = StickerDB.get(m.sticker)
+
             const body = m.body.slice(prefix.length).trim();
             const commandName = body.split(' ')[0].toLowerCase();
             const args = body.split(' ').slice(1);
@@ -196,8 +199,9 @@ async function handleMessages(Tayc, messageUpdate, store) {
             context.text = args.join(" ")
             context.command = commandName;
             context.cmd = prefix + commandName
+
             const matched = COMMANDS.find(cmd =>
-                Array.isArray(cmd.command) ? cmd.command.includes(commandName) : cmd.command === commandName
+                Array.isArray(cmd.command) ? cmd.command.includes(isCmd?.command || commandName) : cmd.command === commandName
             );
 
             if (!matched) return

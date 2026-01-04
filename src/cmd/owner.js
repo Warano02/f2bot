@@ -264,18 +264,14 @@ module.exports = [
     {
         command: ["setstickercmd", "setstikerscmd", "sscmd"],
         desc: "Allow you to set stickers as a command.",
-        /**
-         * 
-         * @param {import("../db/types").BotCommandContext} param0 
-         */
         operate: ({ quoted, reply, text, cmd }) => {
             if (!quoted || quoted.mtype !== "stickerMessage") return reply(`❌Reply to a sticker using *${cmd}*`)
             if (!text) return reply(`† Please provide the command you want to set. \nExp: *${cmd} vv*`)
             const cmds = getCommands()
             let tab = []
             cmds.forEach(e => { tab = [...tab, ...e.command] })
-            if (!tab.includes(text)) return reply(`❌Command *${text}* doesn't exist yet!`)
-            StickerDB.set(quoted.sticker, text)
+            if (!tab.includes(text.trim())) return reply(`❌Command *${text}* doesn't exist yet!`)
+            StickerDB.set(quoted.sticker, text.trim())
             const test = StickerDB.get(quoted?.sticker)
 
             return reply(test ? `🙂‍↔️This sticker will now execute *${text}* command` : `✅Your sticker has been successfully set to execute *${text}* command !`)
