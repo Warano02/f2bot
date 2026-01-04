@@ -1,6 +1,6 @@
 const axios = require('axios');
 const FileType = require('file-type');
-
+const FormData = require('form-data');
 /**
  * Upload image buffer to qu.ax or fallback to telegra.ph
  * @param {Buffer} buffer
@@ -8,11 +8,12 @@ const FileType = require('file-type');
  */
 async function uploadImage(buffer) {
     try {
-        // Get file type
+        if (!Buffer.isBuffer(buffer)) {
+            throw new Error('Invalid buffer');
+        }
         const fileType = await FileType.fromBuffer(buffer);
         const { ext = 'png', mime = 'image/png' } = fileType || {};
 
-        // Prepare multipart form for qu.ax
         const form = new FormData();
         form.append('files[]', buffer, {
             filename: `upload.${ext}`,
@@ -23,10 +24,12 @@ async function uploadImage(buffer) {
             headers: form.getHeaders()
         });
 
-        const result = response.data;
-        if (result?.success && result.files?.[0]?.url) {
-            return result.files[0].url;
-        }
+        // const result = response.data;
+        // if (result?.success && result.files?.[0]?.url) {
+        //     console.log(result);
+            
+        //     return result.files[0].url;
+        // }
 
         // Fallback: Telegraph
         const telegraphForm = new FormData();

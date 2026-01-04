@@ -426,13 +426,6 @@ exports.smsg = async (TaycInc, m, store) => {
 
             let type = getContentType(quoted)
 
-            const altType = (/** @type {string} */ s) => {
-                return s[0].toUpperCase() + s.slice(1)
-            }
-            // console.log(m.msg, "\n\n", m.mtype?.[altType(m.mtype)], "\n\n", type);
-            console.log(m.msg.contextInfo.remoteJid);
-
-
             let quotedMsg = quoted[type]
 
             if (['productMessage'].includes(type)) {
@@ -452,7 +445,6 @@ exports.smsg = async (TaycInc, m, store) => {
             m.quoted.text = m.quoted.text || m.quoted.caption || m.quoted.conversation || m.quoted.contentText || m.quoted.selectedDisplayText || m.quoted.title || ''
             m.quoted.mentionedJid = m.msg.contextInfo.mentionedJid || []
 
-            // Ajout VCF parser
             const quotedMessageFull = {
                 key: {
                     remoteJidAlt: m.quoted.chat,
@@ -484,7 +476,7 @@ exports.smsg = async (TaycInc, m, store) => {
                     //   console.log(m.quoted.vcf);
 
                 } catch (e) {
-                    console.error('❌ Failed to parse quoted VCF file:', e.message)
+                    console.error('❌ Failed too parse quoted VCF file:', e.message)
                     m.quoted.vcf = null
                 }
             }
@@ -495,6 +487,7 @@ exports.smsg = async (TaycInc, m, store) => {
                 return exports.smsg(TaycInc, q, store)
             }
         }
+
     }
 
     if (m.msg?.url) m.download = () => TaycInc.downloadMediaMessage(m.msg)

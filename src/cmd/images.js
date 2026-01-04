@@ -1,5 +1,7 @@
+const { default: axios } = require("axios");
 const { remini } = require("../lib/remini");
 const { wikimedia } = require("../services/scraper.service");
+const { uploadImage } = require("../lib/uploadImage");
 
 module.exports = [
     {
@@ -27,7 +29,7 @@ module.exports = [
     {
         command: ['wikimedia'],
         desc: "Search image to wikimedia",
-        operate: async ({ m, text, Tayc, reply,react }) => {
+        operate: async ({ m, text, Tayc, reply, react }) => {
             if (!text) return reply("📌 *Enter a search query.*");
 
             try {
@@ -47,9 +49,30 @@ module.exports = [
             } catch (error) {
                 console.error(error);
                 reply("❌ *An error occurred while fetching Wikimedia results.*");
-            }finally{
+            } finally {
                 react("")
             }
         }
     },
+    {
+        command: ["removebackround", "rmbg"],
+        desc: "Remove the image background",
+        operate: async ({ react, m, text, cmd, Tayc, reply }) => {
+            if (!text) return reply(`*Please enter the link of your image.*\nExp: ${cmd} https://i.ibb.co/HX2myZs/azaa.jpg `)
+            if (!/^https?:\/\/.*\.(jpg|jpeg|png|gif|webp)(\?.*)?$/.test(text)) return reply('Enter a valid image link')
+            try {
+                await react("⌛")
+                const response = await axios.get(`https://okatsu-rolezapiiz.vercel.app/tools/removebg?url=${text}`, {
+                    responseType: 'arraybuffer',
+                    timeout: 15000
+                })
+                await Tayc.sendMessage(m.chat, { image: Buffer.from(response.data), caption: "Your image withoout Background " })
+            } catch (error) {
+                console.error(error);
+                reply("❌ *An error occurred while enhancing the image.*");
+            } finally {
+                react("")
+            }
+        }
+    }
 ]
