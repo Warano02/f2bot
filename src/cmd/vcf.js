@@ -1,7 +1,7 @@
 const axios = require("axios");
 const VCFUTILS = require("../utils/spec/vcf");
 const { sleep } = require("../lib/myfunc.js");
-const fs=require("fs")
+const fs = require("fs")
 module.exports = [
     {
         command: ["removeduplicatecontact", "rdc"],
@@ -49,6 +49,7 @@ module.exports = [
             if (m.quoted.vcf.length === 0) return reply("*This vcf file doesn't contain valid contacts.*");
             const vcfUtils = new VCFUTILS(m.quoted.vcf);
             let tab = vcfUtils.exportToJSON()
+
 
             const list = tab.map((el, i) => ` 👤: *${el.name}* \n *N°* : @${el.number}\n\n`).join("\n")
             const tags = tab.map(e => e.jid)
